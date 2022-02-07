@@ -5,10 +5,18 @@ import { SettingsSection } from "spcr-settings";
 //rezqw3Q4OEPB1m4rmwfw - playlist content class name
 //JUa6JJNj7R_Y3i4P8YUX - also this
 
-const switchTemplateString = `<label class="x-toggle-wrapper x-settings-secondColumn"><input id="settings.showFriendActivity" class="x-toggle-input" type="checkbox"><span class="x-toggle-indicatorWrapper"><span class="x-toggle-indicator"></span></span></label>`
+//Class names from the spotify app
+const actionBarFlexBoxClassName = "KodyK77Gzjb8NqPGpcgw"
+const playlistContentClassName = "rezqw3Q4OEPB1m4rmwfw"
+const playlistContentClassNameDeeper = "JUa6JJNj7R_Y3i4P8YUX"
 
-const biasedSwitchName = "testBtn";
+//Template Strings 
+const weightedSwitchTemplateString = `<label class="x-toggle-wrapper x-settings-secondColumn"><input id="settings.showFriendActivity" class="x-toggle-input" type="checkbox"><span class="x-toggle-indicatorWrapper"><span class="x-toggle-indicator"></span></span></label>`
 
+//Const names
+const weightedSwitchName = "testBtn";
+
+//Helper Functions
 function htmlToElement(html: string) {
   var template = document.createElement('template');
   html = html.trim(); // Never return a text node of whitespace as the result
@@ -16,10 +24,11 @@ function htmlToElement(html: string) {
   return template.content.firstChild;
 }
 
-async function addButton()
+//Actual Functionality
+async function addWeightedSwitch()
 {
   //if it already exists on the page, don't add another
-  if(document.querySelector("#" + biasedSwitchName))
+  if(document.querySelector("#" + weightedSwitchName))
     return;
 
   console.log("i think a playlist is selected so i'm tryna add a button");
@@ -27,11 +36,11 @@ async function addButton()
   //try and add a button
   var playlistActionBar = document.querySelector(".main-actionBar-ActionBarRow")
   const testBtn = document.createElement("button")
-  testBtn.id = biasedSwitchName
+  testBtn.id = weightedSwitchName
   testBtn.textContent = "test"
 
   //switch
-  var testSwitch = htmlToElement(switchTemplateString);
+  var testSwitch = htmlToElement(weightedSwitchName);
   if(!testSwitch)
     return;
 
@@ -51,7 +60,7 @@ function listenThenApply(pathname: any) {
       if(bar && pathname.includes("playlist"))
       {
         console.log("i think a playlist is selected: " + pathname);
-        addButton();
+        addWeightedSwitch();
         observer.disconnect();
       }
       else
