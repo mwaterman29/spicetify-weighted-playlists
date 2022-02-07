@@ -11,10 +11,16 @@ const playlistContentClassName = "rezqw3Q4OEPB1m4rmwfw"
 const playlistContentClassNameDeeper = "JUa6JJNj7R_Y3i4P8YUX"
 
 //Template Strings 
-const weightedSwitchTemplateString = `<label class="x-toggle-wrapper x-settings-secondColumn"><input id="settings.showFriendActivity" class="x-toggle-input" type="checkbox"><span class="x-toggle-indicatorWrapper"><span class="x-toggle-indicator"></span></span></label>`
+const weightedSwitchTemplateString = `<label class="x-toggle-wrapper x-settings-secondColumn"><input id="weightedSwitch" class="x-toggle-input" type="checkbox"><span class="x-toggle-indicatorWrapper"><span class="x-toggle-indicator"></span></span></label>`
 
 //Const names
-const weightedSwitchName = "testBtn";
+const weightedSwitchName = "weightedSwitch";
+const weightedSwitchSearch = "#weightedSwitch";
+
+
+//Data Globals
+var weightedness : {[id:string]: boolean} = {};
+var weights = [];
 
 //Helper Functions
 function htmlToElement(html: string) {
@@ -24,7 +30,39 @@ function htmlToElement(html: string) {
   return template.content.firstChild;
 }
 
+function getCurrentPlaylistID()
+{
+  //Check if currently on some sort of playable thing (has the action bar w/ the play button)
+  const bar = document.querySelector('.main-actionBar-ActionBarRow');
+  //Find pathname from DOM loc
+  const pathname : string = Spicetify.Platform.History.location.pathname
+  //if it's a playlist
+  if(bar && pathname.includes("playlist"))
+  {
+    //console.log("Pulling playlist ID from: " + pathname);
+    return pathname.substring(10, pathname.length)
+  }
+  else
+  {
+    return "noID";
+  }
+}
+
 //Actual Functionality
+
+//Weighted switch event listener to save ids
+function toggleWeightedness(e : any)
+{
+  //find playlist id, toggle it's weightedness in the weightedness array
+  var id = getCurrentPlaylistID()
+  weightedness[id] = e.target.checked;
+  console.log("Weighted: " + e.target.checked + " for " + id + " full weightedness: " + JSON.stringify(weightedness));
+
+  //store in localstorage
+  Spicetify.LocalStorage.set("weightedness", JSON.stringify(weightedness))
+}
+
+//Create weighted switch
 async function addWeightedSwitch()
 {
   //if it already exists on the page, don't add another
@@ -33,23 +71,31 @@ async function addWeightedSwitch()
 
   console.log("i think a playlist is selected so i'm tryna add a button");
 
-  //try and add a button
+  //Reference Action Bar
   var playlistActionBar = document.querySelector(".main-actionBar-ActionBarRow")
-  const testBtn = document.createElement("button")
-  testBtn.id = weightedSwitchName
-  testBtn.textContent = "test"
 
-  //switch
-  var testSwitch = htmlToElement(weightedSwitchName);
+  //Generate switch from template string
+  var testSwitch = htmlToElement(weightedSwitchTemplateString);
   if(!testSwitch)
     return;
 
   //Find the flex box next to the buttons on the playlist bar which for some reason has the name "KodyK77Gzjb8NqPGpcgw" (very well might change with update)
   var spaceBuffer = document.querySelector(".KodyK77Gzjb8NqPGpcgw")
-  playlistActionBar?.insertBefore(testBtn, spaceBuffer)
-  playlistActionBar?.insertBefore(testSwitch, spaceBuffer)
+  var addedSwitch = playlistActionBar?.insertBefore(testSwitch, spaceBuffer)
+   
+  //Initialize value from weightedness
+  var thisWeightedness = weightedness[getCurrentPlaylistID()]
+  if(thisWeightedness === undefined)
+    thisWeightedness = false
+  console.log("setting to " + thisWeightedness.toString())
+  //for some reason it's not set it to false, must remove to turn it off
+  if(thisWeightedness)
+    document.querySelector(weightedSwitchSearch)?.setAttribute("checked", '')
+  else
+    document.querySelector(weightedSwitchSearch)?.removeAttribute("checked")
 
-  console.log("append attempted");
+  //Add event listener to the added switch
+  addedSwitch?.addEventListener('input', toggleWeightedness)
 }
 
 // Listen to page navigation and re-apply when DOM is ready
@@ -72,8 +118,6 @@ function listenThenApply(pathname: any) {
   observer.observe(document,{ childList: true, subtree: true });
 }
 
-
-
 async function main() {
   
   //Add settings 
@@ -86,12 +130,17 @@ async function main() {
   //apply
   settings.pushSettings();
 
+  //pull weightedness and weights from localstorage
+  var storedWeightedness = Spicetify.LocalStorage.get("weightedness")
+    if(!storedWeightedness)
+      Spicetify.LocalStorage.set("weightedness", JSON.stringify({}));
+    else
+      weightedness = JSON.parse(storedWeightedness);
+
   //game.isLoaded()
   while (!Spicetify?.showNotification) {
     await new Promise(resolve => setTimeout(resolve, 100));
   }
-
-  //addButton();
 
   // Initial scan on app load
   listenThenApply(Spicetify.Platform.History.location.pathname);
