@@ -98,6 +98,23 @@ async function addWeightedSwitch()
   addedSwitch?.addEventListener('input', toggleWeightedness)
 }
 
+async function addWeightSliders(){
+  //Grab the playlist content divs
+  const playlistContents = document.querySelector("." + playlistContentClassName)?.querySelector("." + playlistContentClassNameDeeper)
+  console.log(playlistContents?.childNodes)
+  console.log(playlistContents?.childNodes[1].childNodes)
+  
+  //Grab the playlist content from spotify api
+  var currentID = getCurrentPlaylistID()
+  
+  var uri = Spicetify.URI.fromString(`spotify:playlist:${currentID}`);
+  
+  const res = await Spicetify.CosmosAsync.get(`sp://core-playlist/v1/playlist/${uri.toString()}/rows`, {
+            policy: { link: true },
+        });
+  console.log(res.rows); 
+}
+
 // Listen to page navigation and re-apply when DOM is ready
 function listenThenApply(pathname: any) {
   const observer = new MutationObserver(function appchange(){
@@ -107,6 +124,7 @@ function listenThenApply(pathname: any) {
       {
         console.log("i think a playlist is selected: " + pathname);
         addWeightedSwitch();
+        addWeightSliders();
         observer.disconnect();
       }
       else
