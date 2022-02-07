@@ -98,8 +98,36 @@ async function addWeightedSwitch()
   addedSwitch?.addEventListener('input', toggleWeightedness)
 }
 
-async function addWeightSliders(){
+async function addWeightSliders(playlistContents : any){
+  /*
+  row
+   ->main-trackList-tracklistRow
+     -> main-trackList-rowSectionStart
+        -> insert at the end
+  */
 
+  //get playlist rows
+  var playlistRows = playlistContents?.childNodes[1].childNodes
+  console.log(`filling ${playlistRows.length} rows`)
+
+  for(let i = 0; i < playlistRows.length; i++)
+  {
+    //check if it already exists
+    var count = playlistRows[i].firstChild?.childNodes[1].childNodes.length
+    console.log(`row ${i} has ${count} els`)
+    if(count == undefined)
+      continue;
+    if(count >= 3)
+    continue
+    var testSwitch = htmlToElement(weightedSwitchTemplateString);
+    if(!testSwitch)
+      continue;
+    playlistRows[i].firstChild?.childNodes[1].appendChild(testSwitch);
+  }
+}
+
+async function listenThenAddWeightSliders()
+{
   //literally just wait a second
   await new Promise(r => setTimeout(r, 1000));
 
@@ -111,35 +139,29 @@ async function addWeightSliders(){
   const res = await Spicetify.CosmosAsync.get(`sp://core-playlist/v1/playlist/${uri.toString()}/rows`, {
             policy: { link: true },
         });
-  console.log(res.rows); 
+  //console.log(res.rows); 
 
   //Grab the playlist content divs
   const playlistContents = document.querySelector("." + playlistContentClassName)?.querySelector("." + playlistContentClassNameDeeper)
-  
-  var playlistRows = playlistContents?.childNodes[1].childNodes
-  while(!playlistRows) {
+  if(!playlistContents)
+    return;
+
+  var playlistRowsParent = playlistContents?.childNodes[1]
+  while(!playlistRowsParent) {
     console.log("waiting rows")
-    playlistRows = playlistContents?.childNodes[1].childNodes
+    playlistRowsParent = playlistContents?.childNodes[1]
     await new Promise(r => setTimeout(r, 100));
   }
-  
-  //once the playlist rows exist, everything else should
-  var firstRow = playlistRows[0];
 
-  /*
-  row
-   ->main-trackList-tracklistRow
-     -> main-trackList-rowSectionStart
-        -> insert at the end
-  */
+  //put the sliders there initially
+  addWeightSliders(playlistContents)
 
-  for(let i = 0; i < playlistRows.length; i++)
-  {
-    var testSwitch = htmlToElement(weightedSwitchTemplateString);
-    if(!testSwitch)
-      return;
-    playlistRows[i].firstChild?.childNodes[1].appendChild(testSwitch);
-  }
+  //test for mutation observer
+  const observer = new MutationObserver(function appchange(){
+    console.log("observer is observing a change.");
+    addWeightSliders(playlistContents)
+  })
+  observer.observe(playlistRowsParent,{ childList: true, subtree: true });
 }
 
 // Listen to page navigation and re-apply when DOM is ready
@@ -151,7 +173,7 @@ function listenThenApply(pathname: any) {
       {
         console.log("i think a playlist is selected: " + pathname);
         addWeightedSwitch();
-        addWeightSliders();
+        listenThenAddWeightSliders();
         observer.disconnect();
       }
       else
@@ -197,6 +219,18 @@ async function main() {
 
   // Show message on start.
   //Spicetify.showNotification("test! 2");
+
+  var testButton : Spicetify.ContextMenu.Item = new Spicetify.ContextMenu.Item(
+    //Name
+    "Test Button",
+    //On Click Lambda
+    () =>
+    {
+      Spicetify.showNotification("clicked the test button :)");
+    }
+  )
+  //Add to context menu
+  testButton.register();
 }
 export default main;
 
