@@ -99,11 +99,10 @@ async function addWeightedSwitch()
 }
 
 async function addWeightSliders(){
-  //Grab the playlist content divs
-  const playlistContents = document.querySelector("." + playlistContentClassName)?.querySelector("." + playlistContentClassNameDeeper)
-  console.log(playlistContents?.childNodes)
-  console.log(playlistContents?.childNodes[1].childNodes)
-  
+
+  //literally just wait a second
+  await new Promise(r => setTimeout(r, 1000));
+
   //Grab the playlist content from spotify api
   var currentID = getCurrentPlaylistID()
   
@@ -113,6 +112,34 @@ async function addWeightSliders(){
             policy: { link: true },
         });
   console.log(res.rows); 
+
+  //Grab the playlist content divs
+  const playlistContents = document.querySelector("." + playlistContentClassName)?.querySelector("." + playlistContentClassNameDeeper)
+  
+  var playlistRows = playlistContents?.childNodes[1].childNodes
+  while(!playlistRows) {
+    console.log("waiting rows")
+    playlistRows = playlistContents?.childNodes[1].childNodes
+    await new Promise(r => setTimeout(r, 100));
+  }
+  
+  //once the playlist rows exist, everything else should
+  var firstRow = playlistRows[0];
+
+  /*
+  row
+   ->main-trackList-tracklistRow
+     -> main-trackList-rowSectionStart
+        -> insert at the end
+  */
+
+  for(let i = 0; i < playlistRows.length; i++)
+  {
+    var testSwitch = htmlToElement(weightedSwitchTemplateString);
+    if(!testSwitch)
+      return;
+    playlistRows[i].firstChild?.childNodes[1].appendChild(testSwitch);
+  }
 }
 
 // Listen to page navigation and re-apply when DOM is ready
