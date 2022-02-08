@@ -12,16 +12,20 @@ const playlistContentClassNameDeeper = "JUa6JJNj7R_Y3i4P8YUX"
 
 //Template Strings 
 const weightedSwitchTemplateString = `<label class="x-toggle-wrapper x-settings-secondColumn"><input id="weightedSwitch" class="x-toggle-input" type="checkbox"><span class="x-toggle-indicatorWrapper"><span class="x-toggle-indicator"></span></span></label>`
-const weightButtonTemplateString = `<input type="button" value="test button" style="background-color:Tomato;">`
+const weightButtonTemplateString = `<input type="button" value="Weight" style="background-color:#121212;">`
 const weightSliderPopupTemplateString = `<div class="weight-slider-popup" style="z-index: 10000; position: absolute; inset: 0px auto auto 0px; margin: 0px; transform: translate(200px, 200px); background-color:Tomato; border-radius: 10px;"> <p>Weight: </p> <div class="slidecontainer"> <input type="range" min="0.01" max="100" value="1" class="slider" id="myRange"> </div> </div>`
 //Const names
 const weightedSwitchName = "weightedSwitch";
 const weightedSwitchSearch = "#weightedSwitch";
 
-
 //Data Globals
 var weightedness : {[id:string]: boolean} = {};
 var weights = [];
+
+//Misc Globals
+var currentPlaylistID
+var selectedSong = ""
+var selectedPlaylistContents : any
 
 //Helper Functions
 function htmlToElement(html: string) {
@@ -100,7 +104,7 @@ async function addWeightedSwitch()
 }
 
 //Weight Slider Popup:
-var weightSliderPopupString = 
+const weightSliderPopupString = 
 `
 <div class="weight-slider-popup">
 <style>
@@ -112,7 +116,7 @@ var weightSliderPopupString =
     background-color:#333333; border-radius: 10px; 
     height:60px; width:200px;
   }
-  .slider 
+  .weight-slider 
   {
     -webkit-appearance: none;  /* Override default CSS styles */
     appearance: none;
@@ -129,7 +133,7 @@ var weightSliderPopupString =
     bottom:10%; 
     left:5%;
   }
-  .slider::-webkit-slider-thumb 
+  .weight-slider::-webkit-slider-thumb 
   {
     -webkit-appearance: none;
     appearance: none;
@@ -144,7 +148,7 @@ var weightSliderPopupString =
     top:5%;
     left:5%;
   }
-  .x-button{
+  .weight-slider-x-button{
     background-color:#333333; 
     color:#121212; 
     font-weight:bold; 
@@ -153,15 +157,15 @@ var weightSliderPopupString =
     outline:none
   }
   </style>
-<div class="weight-text-container">
-  <p style="color:#1ed760">Weight:</p> 
-</div>
-<div style="position: absolute; top:5%; right:5%; outline:none">
-  <input type="button" value="x" class="x-button">
-</div>
-<div class="slidecontainer" >
-  <input type="range" min="0.01" max="100" value="1" class="slider" id="myRange">
-</div> 
+  <div class="weight-text-container">
+    <p style="color:#1ed760" class="weight-text">Weight:</p> 
+  </div>
+  <div style="position: absolute; top:5%; right:5%; outline:none">
+    <input type="button" value="x" class="weight-slider-x-button">
+  </div>
+  <div class="weight-slider-container">
+    <input type="range" min="0.01" max="100" step="0.01" value="1" class="weight-slider" id="myRange">
+  </div> 
 </div>
 `
 
@@ -171,16 +175,11 @@ async function openWeightSliderPopup(e : any)
   console.log(e);
   console.log(document)
 
-
   //grab variables and insert them into string
-
-  //position
   var x = e.x;
   var y = e.y;
 
-  //color
-
-  //HTML defining the components
+  //stick into style attribute
   var popupPositioningStyleString = `transform: translate(${x}px, ${y}px)`
 
   //Create the element
@@ -194,11 +193,51 @@ async function openWeightSliderPopup(e : any)
   //add popup to window
   var popupNode = document.querySelector("body")?.appendChild(popup)
 
-  //set it's position with style string
+  //set its position with style string
   document.querySelector(`.weight-slider-popup`)?.setAttribute("style", popupPositioningStyleString)
+
+  //add event listeners for:
+
+  //close button
+  document.querySelector(`.weight-slider-x-button`)?.addEventListener(`click`, function()
+  {
+    document.querySelector(`.weight-slider-popup`)?.remove()
+  })
+
+  //weight change
+  document.querySelector(`.weight-slider`)?.addEventListener(`input`, function(e : any)
+  {
+    var weightText = document.querySelector(`.weight-text`)
+    if(!weightText)
+      return
+    weightText.textContent = `Weight: ${e.target.value}`;
+  })
+}
+
+
+//Second order function to return an event handler
+function setSelectedSong(uri : string)
+{
+  return (e : any) => {
+    selectedSong = uri
+    console.log(`current song is now ${uri}`);
+  }
 }
 
 async function addWeightSliders(playlistContents : any){
+  
+
+  //if the playlist isn't sorted by custom order, the row indices won't work
+  var sortingOrderTextContent = document.querySelector(".w6j_vX6SF5IxSXrrkYw5")?.querySelector(".main-type-mesto")?.textContent
+  console.log(sortingOrderTextContent)
+  if(sortingOrderTextContent != 'Custom order')
+  {
+    console.log('improperly sorted');
+    return
+  }
+  else
+    console.log('properly sorted');
+
   /*
   row
    ->main-trackList-tracklistRow
@@ -219,14 +258,18 @@ async function addWeightSliders(playlistContents : any){
       continue;
     if(count >= 3)
     continue
-    var testSwitch = htmlToElement(weightButtonTemplateString);
-    if(!testSwitch)
+    var weightButton = htmlToElement(weightButtonTemplateString);
+    if(!weightButton)
       continue;
 
-    //add event listener for opening the weight popup
-    testSwitch.addEventListener("click", openWeightSliderPopup)
+    //add event listener for opening the weight popup, and to set the current song
+    weightButton.addEventListener("click", openWeightSliderPopup)
+    //pull uri
+    var songIndex = playlistRows[i].getAttribute(`aria-rowindex`) - 2;
+    var uri = selectedPlaylistContents[songIndex].link.split(':')[2];
+    weightButton.addEventListener("click", setSelectedSong(uri))
 
-    playlistRows[i].firstChild?.childNodes[1].appendChild(testSwitch);
+    playlistRows[i].firstChild?.childNodes[1].appendChild(weightButton);
   }
 }
 
@@ -236,14 +279,12 @@ async function listenThenAddWeightSliders()
   await new Promise(r => setTimeout(r, 1000));
 
   //Grab the playlist content from spotify api
-  var currentID = getCurrentPlaylistID()
-  
-  var uri = Spicetify.URI.fromString(`spotify:playlist:${currentID}`);
-  
+  currentPlaylistID = getCurrentPlaylistID()
+  var uri = Spicetify.URI.fromString(`spotify:playlist:${currentPlaylistID}`);
   const res = await Spicetify.CosmosAsync.get(`sp://core-playlist/v1/playlist/${uri.toString()}/rows`, {
             policy: { link: true },
         });
-  //console.log(res.rows); 
+  selectedPlaylistContents = res.rows 
 
   //Grab the playlist content divs
   const playlistContents = document.querySelector("." + playlistContentClassName)?.querySelector("." + playlistContentClassNameDeeper)
