@@ -12,7 +12,7 @@ const playlistContentClassNameDeeper = "JUa6JJNj7R_Y3i4P8YUX"
 
 //Template Strings 
 const weightedSwitchTemplateString = `<label class="x-toggle-wrapper x-settings-secondColumn"><input id="weightedSwitch" class="x-toggle-input" type="checkbox"><span class="x-toggle-indicatorWrapper"><span class="x-toggle-indicator"></span></span></label>`
-const weightButtonTemplateString = `<input type="button" value="Weight" style="background-color:#121212;"`
+const weightButtonTemplateString = `<input type="button" class="weight-slider-access-button" value="Weight" style="background-color:#121212;"`
 const weightSliderPopupTemplateString = `<div class="weight-slider-popup" style="z-index: 10000; position: absolute; inset: 0px auto auto 0px; margin: 0px; transform: translate(200px, 200px); background-color:Tomato; border-radius: 10px;"> <p>Weight: </p> <div class="slidecontainer"> <input type="range" min="0.01" max="100" value="1" class="slider" id="myRange"> </div> </div>`
 //Const names
 const weightedSwitchName = "weightedSwitch";
@@ -45,7 +45,9 @@ function getCurrentPlaylistID()
   if(bar && pathname.includes("playlist"))
   {
     //console.log("Pulling playlist ID from: " + pathname);
-    return pathname.substring(10, pathname.length)
+    var id = pathname.substring(10, pathname.length)
+    currentPlaylistID = id
+    return id
   }
   else
   {
@@ -66,10 +68,14 @@ function toggleWeightedness(e : any)
   //store in localstorage
   Spicetify.LocalStorage.set("weightedness", JSON.stringify(weightedness))
 
-  //if this playlist has no weights, initialize them
-  if(!weights[id] || !weights[id] == null || !weights[id] == undefined)
+  //if toggled on, add weight sliders
+  if(weightedness[id])
   {
-    initializeWeightsForPlaylist(id);
+    addWeightSliders(document.querySelector("." + playlistContentClassName)?.querySelector("." + playlistContentClassNameDeeper));
+  }
+  else
+  {
+    removeWeightSliders()
   }
 }
 
@@ -98,7 +104,7 @@ async function addWeightedSwitch()
   var thisWeightedness = weightedness[getCurrentPlaylistID()]
   if(thisWeightedness === undefined)
     thisWeightedness = false
-  console.log("setting to " + thisWeightedness.toString())
+  //console.log("setting to " + thisWeightedness.toString())
   //for some reason it's not set it to false, must remove to turn it off
   if(thisWeightedness)
     document.querySelector(weightedSwitchSearch)?.setAttribute("checked", '')
@@ -177,6 +183,10 @@ const weightSliderPopupString =
 
 async function initializeWeightsForPlaylist(id: string)
 {
+  //if this playlist already has weights, don't redo it.
+  if(weights[id])
+    return;
+
   //Grab the playlist content from spotify api
   var uri = Spicetify.URI.fromString(`spotify:playlist:${id}`);
   const res = await Spicetify.CosmosAsync.get(`sp://core-playlist/v1/playlist/${uri.toString()}/rows`, {
@@ -192,15 +202,17 @@ async function initializeWeightsForPlaylist(id: string)
   {
     var songId = selectedPlaylistContents[i].link.split(':')[2];
     weights[id][songId] = 1;
-    console.log(`setting ${songId}`);
+    //console.log(`setting ${songId}`);
   }
 }
 
 //Function to create the weight slider popup window
 async function openWeightSliderPopup(e : any)
 {
-  console.log(e);
-  console.log(document)
+  //console.log(`current song is: ${selectedSong}`)
+  //console.log(e);
+  //console.log(e.target);
+  //console.log(document)
 
   //grab variables and insert them into string
   var x = e.x;
@@ -250,8 +262,9 @@ async function openWeightSliderPopup(e : any)
       return
     //Pull content
     var weight = e.target.value
-    //Update text
+    //Update text on the popup and it's button
     weightText.textContent = `Weight: ${weight}`;
+    document.getElementById(`${selectedSong}`)?.setAttribute("value", weight);
     //If the weight currently doesn't exist,
     //if(!weights[currentPlaylistID])
     //  weights[currentPlaylistID] = {"noID" : 0};
@@ -262,7 +275,6 @@ async function openWeightSliderPopup(e : any)
     Spicetify.LocalStorage.set("weights", JSON.stringify(weights));
   })
 }
-
 
 //Second order function to return an event handler
 function setSelectedSong(uri : string)
@@ -280,14 +292,14 @@ async function addWeightSliders(playlistContents : any){
 
   //if the playlist isn't sorted by custom order, the row indices won't work
   var sortingOrderTextContent = document.querySelector(".w6j_vX6SF5IxSXrrkYw5")?.querySelector(".main-type-mesto")?.textContent
-  console.log(sortingOrderTextContent)
+  //console.log(sortingOrderTextContent)
   if(sortingOrderTextContent != 'Custom order')
   {
-    console.log('improperly sorted');
+    //console.log('improperly sorted');
     return
   }
-  else
-    console.log('properly sorted');
+  //else
+  //  console.log('properly sorted');
 
   /*
   row
@@ -319,9 +331,9 @@ async function addWeightSliders(playlistContents : any){
       continue;
 
     //add event listener for opening the weight popup, and to set the current song
+    weightButton.addEventListener("click", setSelectedSong(uri))
     weightButton.addEventListener("click", openWeightSliderPopup)
     
-    weightButton.addEventListener("click", setSelectedSong(uri))
 
     playlistRows[i].firstChild?.childNodes[1].appendChild(weightButton);
 
@@ -330,6 +342,13 @@ async function addWeightSliders(playlistContents : any){
     if(button)
       button.setAttribute("value", `${weights[currentPlaylistID][uri]}`);
   }
+}
+
+async function removeWeightSliders()
+{
+  document.querySelectorAll(`.weight-slider-access-button`).forEach((item) => {
+    item.remove();
+  })
 }
 
 async function listenThenAddWeightSliders()
@@ -352,7 +371,7 @@ async function listenThenAddWeightSliders()
 
   var playlistRowsParent = playlistContents?.childNodes[1]
   while(!playlistRowsParent) {
-    console.log("waiting rows")
+    //console.log("waiting rows")
     playlistRowsParent = playlistContents?.childNodes[1]
     await new Promise(r => setTimeout(r, 100));
   }
@@ -360,9 +379,9 @@ async function listenThenAddWeightSliders()
   //put the sliders there initially
   addWeightSliders(playlistContents)
 
-  //test for mutation observer
+  //when the page changes, it should add sliders
   const observer = new MutationObserver(function appchange(){
-    console.log("observer is observing a change.");
+    getCurrentPlaylistID()
     addWeightSliders(playlistContents)
   })
   observer.observe(playlistRowsParent,{ childList: true, subtree: true });
@@ -376,6 +395,11 @@ function listenThenApply(pathname: any) {
       if(bar && pathname.includes("playlist"))
       {
         console.log("i think a playlist is selected: " + pathname);
+
+        //before anything else initialize weights so other things don't break
+        getCurrentPlaylistID();
+        initializeWeightsForPlaylist(currentPlaylistID);
+        //add switches and sliders
         addWeightedSwitch();
         listenThenAddWeightSliders();
         observer.disconnect();
