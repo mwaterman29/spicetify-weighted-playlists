@@ -20,10 +20,10 @@ const weightedSwitchSearch = "#weightedSwitch";
 
 //Data Globals
 var weightedness : {[id:string]: boolean} = {};
-var weights = [];
+var weights : {[playlistId:string] : {[songId:string]: number}} = {};
 
 //Misc Globals
-var currentPlaylistID
+var currentPlaylistID : any
 var selectedSong = ""
 var selectedPlaylistContents : any
 
@@ -65,6 +65,16 @@ function toggleWeightedness(e : any)
 
   //store in localstorage
   Spicetify.LocalStorage.set("weightedness", JSON.stringify(weightedness))
+
+  //if this playlist has no weights, initialize them
+  if(weightedness[id])
+  {
+    if(!weights[id] || !weights[id] == null || !weights[id] == undefined)
+    {
+      initializeWeightsForPlaylist(id);
+    }
+      
+  }
 }
 
 //Create weighted switch
@@ -169,6 +179,27 @@ const weightSliderPopupString =
 </div>
 `
 
+async function initializeWeightsForPlaylist(id: string)
+{
+  //Grab the playlist content from spotify api
+  var uri = Spicetify.URI.fromString(`spotify:playlist:${id}`);
+  const res = await Spicetify.CosmosAsync.get(`sp://core-playlist/v1/playlist/${uri.toString()}/rows`, {
+            policy: { link: true },
+        });
+  selectedPlaylistContents = res.rows
+
+  //set weights[id] to blank
+  weights[id] = {}
+
+  //fill in each song to have default weight of 1
+  for(let i = 0; i < selectedPlaylistContents.length; i++)
+  {
+    var songId = selectedPlaylistContents[i].link.split(':')[2];
+    weights[id][songId] = 1;
+    console.log(`setting ${songId}`);
+  }
+}
+
 //Function to create the weight slider popup window
 async function openWeightSliderPopup(e : any)
 {
@@ -196,6 +227,16 @@ async function openWeightSliderPopup(e : any)
   //set its position with style string
   document.querySelector(`.weight-slider-popup`)?.setAttribute("style", popupPositioningStyleString)
 
+  //display current weight
+  var initialWeightText = document.querySelector(`.weight-text`)
+  //error handling
+  if(!initialWeightText)
+      return
+  if(!weights[currentPlaylistID][selectedSong])
+    weights[currentPlaylistID][selectedSong] = 1;
+  //set display
+  initialWeightText.textContent = `Weight: ${weights[currentPlaylistID][selectedSong]}`;
+
   //add event listeners for:
 
   //close button
@@ -207,10 +248,22 @@ async function openWeightSliderPopup(e : any)
   //weight change
   document.querySelector(`.weight-slider`)?.addEventListener(`input`, function(e : any)
   {
+    //Find weight text
     var weightText = document.querySelector(`.weight-text`)
     if(!weightText)
       return
-    weightText.textContent = `Weight: ${e.target.value}`;
+    //Pull content
+    var weight = e.target.value
+    //Update text
+    weightText.textContent = `Weight: ${weight}`;
+    //If the weight currently doesn't exist,
+    //if(!weights[currentPlaylistID])
+    //  weights[currentPlaylistID] = {"noID" : 0};
+    //Set weight in playlist, with selectedsong in global from event handler
+    weights[currentPlaylistID][selectedSong] = weight
+    console.log(weights[currentPlaylistID])
+    //Store in spicetify storage
+    Spicetify.LocalStorage.set("weights", JSON.stringify(weights));
   })
 }
 
@@ -225,8 +278,6 @@ function setSelectedSong(uri : string)
 }
 
 async function addWeightSliders(playlistContents : any){
-  
-
   //if the playlist isn't sorted by custom order, the row indices won't work
   var sortingOrderTextContent = document.querySelector(".w6j_vX6SF5IxSXrrkYw5")?.querySelector(".main-type-mesto")?.textContent
   console.log(sortingOrderTextContent)
@@ -331,7 +382,6 @@ function listenThenApply(pathname: any) {
 }
 
 async function main() {
-  
   //Add settings 
   const settings = new SettingsSection("Song Weighting", "song-weights");
 
@@ -343,11 +393,21 @@ async function main() {
   settings.pushSettings();
 
   //pull weightedness and weights from localstorage
+  //Spicetify.LocalStorage.set("weightedness", JSON.stringify({}));
+  //Spicetify.LocalStorage.set("weights", JSON.stringify({}));
+  //return;
   var storedWeightedness = Spicetify.LocalStorage.get("weightedness")
     if(!storedWeightedness)
       Spicetify.LocalStorage.set("weightedness", JSON.stringify({}));
     else
       weightedness = JSON.parse(storedWeightedness);
+  var storedWeights = Spicetify.LocalStorage.get("weights")
+  if(!storedWeights)
+  {
+    storedWeights = JSON.stringify({});
+    Spicetify.LocalStorage.set("weights", JSON.stringify({}));
+  }
+  weights = JSON.parse(storedWeights);
 
   //game.isLoaded()
   while (!Spicetify?.showNotification) {
@@ -378,35 +438,3 @@ async function main() {
   //testButton.register();
 }
 export default main;
-
-//Dump of stuff
-
-/*
-
-//make something
-  var testIcon = React.createElement(
-    "testIcon",
-    {
-      width: 30,
-      height: 30,
-      fill: "currentColor"
-    }
-  );
-
-  Spicetify.ReactDOM.render(testIcon, Spicetify.ReactComponent.PlaylistMenu);
-
-
-  
-  //Add context menu item on a song
-  var testButton : Spicetify.ContextMenu.Item = new Spicetify.ContextMenu.Item(
-    //Name
-    "Test Button",
-    //On Click Lambda
-    () =>
-    {
-      Spicetify.showNotification("clicked the test button :)");
-    }
-  )
-  //Add to context menu
-  testButton.register();
-  */
