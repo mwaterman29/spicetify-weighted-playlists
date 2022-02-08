@@ -13,5 +13,10 @@
     "@types/react": "^17.0.39",
     "@types/react-dom": "^17.0.11",
     "spicetify-creator": "^1.0.5"
+  },
+  "dependencies": {
+    "caniuse-lite": "^1.0.30001309",
+    "react-modal": "^3.14.4",
+    "spcr-settings": "^0.1.3"
   }
 }
