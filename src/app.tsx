@@ -12,7 +12,7 @@ const playlistContentClassNameDeeper = "JUa6JJNj7R_Y3i4P8YUX"
 
 //Template Strings 
 const weightedSwitchTemplateString = `<label class="x-toggle-wrapper x-settings-secondColumn"><input id="weightedSwitch" class="x-toggle-input" type="checkbox"><span class="x-toggle-indicatorWrapper"><span class="x-toggle-indicator"></span></span></label>`
-const weightButtonTemplateString = `<input type="button" value="Weight" style="background-color:#121212;">`
+const weightButtonTemplateString = `<input type="button" value="Weight" style="background-color:#121212;"`
 const weightSliderPopupTemplateString = `<div class="weight-slider-popup" style="z-index: 10000; position: absolute; inset: 0px auto auto 0px; margin: 0px; transform: translate(200px, 200px); background-color:Tomato; border-radius: 10px;"> <p>Weight: </p> <div class="slidecontainer"> <input type="range" min="0.01" max="100" value="1" class="slider" id="myRange"> </div> </div>`
 //Const names
 const weightedSwitchName = "weightedSwitch";
@@ -67,13 +67,9 @@ function toggleWeightedness(e : any)
   Spicetify.LocalStorage.set("weightedness", JSON.stringify(weightedness))
 
   //if this playlist has no weights, initialize them
-  if(weightedness[id])
+  if(!weights[id] || !weights[id] == null || !weights[id] == undefined)
   {
-    if(!weights[id] || !weights[id] == null || !weights[id] == undefined)
-    {
-      initializeWeightsForPlaylist(id);
-    }
-      
+    initializeWeightsForPlaylist(id);
   }
 }
 
@@ -278,6 +274,10 @@ function setSelectedSong(uri : string)
 }
 
 async function addWeightSliders(playlistContents : any){
+  //if the playlist isn't weighted, don't bother
+  if(!weightedness[currentPlaylistID])
+    return
+
   //if the playlist isn't sorted by custom order, the row indices won't work
   var sortingOrderTextContent = document.querySelector(".w6j_vX6SF5IxSXrrkYw5")?.querySelector(".main-type-mesto")?.textContent
   console.log(sortingOrderTextContent)
@@ -309,18 +309,26 @@ async function addWeightSliders(playlistContents : any){
       continue;
     if(count >= 3)
     continue
-    var weightButton = htmlToElement(weightButtonTemplateString);
+
+    //pull uri
+    var songIndex = playlistRows[i].getAttribute(`aria-rowindex`) - 2;
+    var uri = selectedPlaylistContents[songIndex].link.split(':')[2];
+
+    var weightButton = htmlToElement(weightButtonTemplateString + `id="${uri}">`);
     if(!weightButton)
       continue;
 
     //add event listener for opening the weight popup, and to set the current song
     weightButton.addEventListener("click", openWeightSliderPopup)
-    //pull uri
-    var songIndex = playlistRows[i].getAttribute(`aria-rowindex`) - 2;
-    var uri = selectedPlaylistContents[songIndex].link.split(':')[2];
+    
     weightButton.addEventListener("click", setSelectedSong(uri))
 
     playlistRows[i].firstChild?.childNodes[1].appendChild(weightButton);
+
+    //set the button's text to it's weight
+    var button = document.getElementById(`${uri}`);
+    if(button)
+      button.setAttribute("value", `${weights[currentPlaylistID][uri]}`);
   }
 }
 
@@ -393,8 +401,8 @@ async function main() {
   settings.pushSettings();
 
   //pull weightedness and weights from localstorage
-  //Spicetify.LocalStorage.set("weightedness", JSON.stringify({}));
-  //Spicetify.LocalStorage.set("weights", JSON.stringify({}));
+  Spicetify.LocalStorage.set("weightedness", JSON.stringify({}));
+  Spicetify.LocalStorage.set("weights", JSON.stringify({}));
   //return;
   var storedWeightedness = Spicetify.LocalStorage.get("weightedness")
     if(!storedWeightedness)
