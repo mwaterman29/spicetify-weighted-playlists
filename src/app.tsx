@@ -14,7 +14,6 @@ const playlistContentClassNameDeeper = "JUa6JJNj7R_Y3i4P8YUX"
 const weightedSwitchTemplateString = `<label class="x-toggle-wrapper x-settings-secondColumn"><input id="weightedSwitch" class="x-toggle-input" type="checkbox"><span class="x-toggle-indicatorWrapper"><span class="x-toggle-indicator"></span></span></label>`
 const weightButtonTemplateString = `<input type="button" value="test button" style="background-color:Tomato;">`
 const weightSliderPopupTemplateString = `<div class="weight-slider-popup" style="z-index: 10000; position: absolute; inset: 0px auto auto 0px; margin: 0px; transform: translate(200px, 200px); background-color:Tomato; border-radius: 10px;"> <p>Weight: </p> <div class="slidecontainer"> <input type="range" min="0.01" max="100" value="1" class="slider" id="myRange"> </div> </div>`
-
 //Const names
 const weightedSwitchName = "weightedSwitch";
 const weightedSwitchSearch = "#weightedSwitch";
@@ -105,12 +104,25 @@ async function openWeightSliderPopup(e : any)
 {
   console.log(e);
   console.log(document)
+
   var popup = htmlToElement(weightSliderPopupTemplateString);
 
   if(!popup)
     return
 
+  //if it already exists, remove it
+  document.querySelector(`.weight-slider-popup`)?.remove()
+
+  //add popup to window
   document.querySelector("body")?.appendChild(popup)
+
+  //position the popup
+  var x = e.x;
+  var y = e.y;
+  var styleString=`z-index: 10000; position: absolute; inset: 0px auto auto 0px; margin: 0px; transform: translate(${x}px, ${y}px); background-color:Tomato; border-radius: 10px;`
+  document.querySelector(`.weight-slider-popup`)?.setAttribute("style", styleString);
+  
+  
 
 }
 
