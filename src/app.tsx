@@ -19,6 +19,7 @@ const weightedSwitchName = "weightedSwitch";
 const weightedSwitchSearch = "#weightedSwitch";
 
 //Data Globals
+var settings : SettingsSection
 var weightedness : {[id:string]: boolean} = {};
 var weights : {[playlistId:string] : {[songId:string]: number}} = {};
 
@@ -86,7 +87,7 @@ async function addWeightedSwitch()
   if(document.querySelector("#" + weightedSwitchName))
     return;
 
-  console.log("i think a playlist is selected so i'm tryna add a button");
+  //console.log("i think a playlist is selected so i'm tryna add a button");
 
   //Reference Action Bar
   var playlistActionBar = document.querySelector(".main-actionBar-ActionBarRow")
@@ -183,9 +184,12 @@ const weightSliderPopupString =
 
 async function initializeWeightsForPlaylist(id: string)
 {
+  console.log(`assessing: ${weights[id]} to be ${(weights[id]) != undefined} `)
+
   //if this playlist already has weights, don't redo it.
   if(weights[id])
     return;
+
 
   //Grab the playlist content from spotify api
   var uri = Spicetify.URI.fromString(`spotify:playlist:${id}`);
@@ -253,6 +257,12 @@ async function openWeightSliderPopup(e : any)
     document.querySelector(`.weight-slider-popup`)?.remove()
   })
 
+  //set min, max, and current value on slider
+  var slider = document.querySelector(`.weight-slider`)
+  slider?.setAttribute("min", settings.getFieldValue("min-weight"))
+  slider?.setAttribute("max", settings.getFieldValue("max-weight"))
+  slider?.setAttribute("value", weights[currentPlaylistID][selectedSong].toString())
+  
   //weight change
   document.querySelector(`.weight-slider`)?.addEventListener(`input`, function(e : any)
   {
@@ -324,6 +334,10 @@ async function addWeightSliders(playlistContents : any){
 
     //pull uri
     var songIndex = playlistRows[i].getAttribute(`aria-rowindex`) - 2;
+    if(!selectedPlaylistContents[songIndex])
+    {
+      console.log(`can't find song at index ${songIndex}`)
+    }
     var uri = selectedPlaylistContents[songIndex].link.split(':')[2];
 
     var weightButton = htmlToElement(weightButtonTemplateString + `id="${uri}">`);
@@ -414,20 +428,23 @@ function listenThenApply(pathname: any) {
 }
 
 async function main() {
+
   //Add settings 
-  const settings = new SettingsSection("Song Weighting", "song-weights");
+  settings = new SettingsSection("Song Weighting", "song-weights");
+
 
   //min and max weight
-  settings.addInput("min-weight", "Minimum Song Weight", "0.01");
-  settings.addInput("max-weight", "Maximum Song Weight", "100");
+  settings.addInput("min-weight", "Minimum Song Weight", "0.25");
+  settings.addInput("max-weight", "Maximum Song Weight", "10");
 
   //apply
   settings.pushSettings();
 
+  //clear weights for testing
+  //Spicetify.LocalStorage.set("weightedness", JSON.stringify({}));
+  //Spicetify.LocalStorage.set("weights", JSON.stringify({}));
+
   //pull weightedness and weights from localstorage
-  Spicetify.LocalStorage.set("weightedness", JSON.stringify({}));
-  Spicetify.LocalStorage.set("weights", JSON.stringify({}));
-  //return;
   var storedWeightedness = Spicetify.LocalStorage.get("weightedness")
     if(!storedWeightedness)
       Spicetify.LocalStorage.set("weightedness", JSON.stringify({}));
@@ -469,4 +486,5 @@ async function main() {
   //Add to context menu
   //testButton.register();
 }
+
 export default main;
