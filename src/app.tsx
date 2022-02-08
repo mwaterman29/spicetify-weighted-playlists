@@ -99,14 +99,92 @@ async function addWeightedSwitch()
   addedSwitch?.addEventListener('input', toggleWeightedness)
 }
 
+//Weight Slider Popup:
+var weightSliderPopupString = 
+`
+<div class="weight-slider-popup">
+<style>
+  .weight-slider-popup{
+    z-index: 10000;
+    position: absolute; 
+    inset: 0px auto auto 0px; 
+    margin: 0px; transform: translate(100px, 100px); 
+    background-color:#333333; border-radius: 10px; 
+    height:60px; width:200px;
+  }
+  .slider 
+  {
+    -webkit-appearance: none;  /* Override default CSS styles */
+    appearance: none;
+    width: 100%; /* Full-width */
+    height: 10px; /* Specified height */
+    background: #d3d3d3; /* Grey background */
+    outline: none; /* Remove outline */
+    opacity: 1; /* Set transparency (for mouse-over effects on hover) */
+    -webkit-transition: .2s; /* 0.2 seconds transition on hover */
+    transition: opacity .2s;
+    border-radius: 5px;
+    position: absolute; 
+    width:90%; 
+    bottom:10%; 
+    left:5%;
+  }
+  .slider::-webkit-slider-thumb 
+  {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%; 
+    background: #1ed760;
+    cursor: pointer;
+  }
+  .weight-text-container{
+    position: absolute;
+    top:5%;
+    left:5%;
+  }
+  .x-button{
+    background-color:#333333; 
+    color:#121212; 
+    font-weight:bold; 
+    font-size:20px; 
+    border-style:none;
+    outline:none
+  }
+  </style>
+<div class="weight-text-container">
+  <p style="color:#1ed760">Weight:</p> 
+</div>
+<div style="position: absolute; top:5%; right:5%; outline:none">
+  <input type="button" value="x" class="x-button">
+</div>
+<div class="slidecontainer" >
+  <input type="range" min="0.01" max="100" value="1" class="slider" id="myRange">
+</div> 
+</div>
+`
+
 //Function to create the weight slider popup window
 async function openWeightSliderPopup(e : any)
 {
   console.log(e);
   console.log(document)
 
-  var popup = htmlToElement(weightSliderPopupTemplateString);
 
+  //grab variables and insert them into string
+
+  //position
+  var x = e.x;
+  var y = e.y;
+
+  //color
+
+  //HTML defining the components
+  var popupPositioningStyleString = `transform: translate(${x}px, ${y}px)`
+
+  //Create the element
+  var popup = htmlToElement(weightSliderPopupString);
   if(!popup)
     return
 
@@ -114,16 +192,10 @@ async function openWeightSliderPopup(e : any)
   document.querySelector(`.weight-slider-popup`)?.remove()
 
   //add popup to window
-  document.querySelector("body")?.appendChild(popup)
+  var popupNode = document.querySelector("body")?.appendChild(popup)
 
-  //position the popup
-  var x = e.x;
-  var y = e.y;
-  var styleString=`z-index: 10000; position: absolute; inset: 0px auto auto 0px; margin: 0px; transform: translate(${x}px, ${y}px); background-color:Tomato; border-radius: 10px;`
-  document.querySelector(`.weight-slider-popup`)?.setAttribute("style", styleString);
-  
-  
-
+  //set it's position with style string
+  document.querySelector(`.weight-slider-popup`)?.setAttribute("style", popupPositioningStyleString)
 }
 
 async function addWeightSliders(playlistContents : any){
