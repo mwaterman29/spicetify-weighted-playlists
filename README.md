@@ -4,7 +4,7 @@
 
 ## Install
 
-(will be) available from the [Spicetify Marketplace](https://github.com/CharlieS1103/spicetify-marketplace) or via direct install:
+Available from the [Spicetify Marketplace](https://github.com/CharlieS1103/spicetify-marketplace) or via direct install:
 
 Download `weighted-playlists.js` into your Spicetify extensions folder.
 
