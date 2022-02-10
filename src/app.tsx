@@ -1,7 +1,6 @@
 import React from "react";
 import { SettingsSection } from "spcr-settings";
 
-
 //Class names from the spotify app
 const actionBarFlexBoxClassName = "KodyK77Gzjb8NqPGpcgw" // name for  the space buffer
 const playlistContentClassName = "rezqw3Q4OEPB1m4rmwfw"
@@ -390,8 +389,6 @@ function listenThenApply(pathname: any) {
       const bar = document.querySelector('.main-actionBar-ActionBarRow');
       if(bar && pathname.includes("playlist"))
       {
-        //console.log("i think a playlist is selected: " + pathname);
-
         //before anything else initialize weights so other things don't break
         getCurrentPlaylistID();
         initializeWeightsForPlaylist(currentPlaylistID);
@@ -405,13 +402,13 @@ function listenThenApply(pathname: any) {
         //console.log("i think a playlist is NOT selected.");
       }
   })
+
   // I need to include subtree because the Search page only has one child and the content is under there
   observer.observe(document,{ childList: true, subtree: true });
 }
 
 function pickNextSong(playlist: string)
 {
-
   //pick song from weights
   var playlistWeights = weights[playlist];
 
