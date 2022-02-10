@@ -1,12 +1,9 @@
 import React from "react";
 import { SettingsSection } from "spcr-settings";
 
-//KodyK77Gzjb8NqPGpcgw
-//rezqw3Q4OEPB1m4rmwfw - playlist content class name
-//JUa6JJNj7R_Y3i4P8YUX - also this
 
 //Class names from the spotify app
-const actionBarFlexBoxClassName = "KodyK77Gzjb8NqPGpcgw"
+const actionBarFlexBoxClassName = "KodyK77Gzjb8NqPGpcgw" // name for  the space buffer
 const playlistContentClassName = "rezqw3Q4OEPB1m4rmwfw"
 const playlistContentClassNameDeeper = "JUa6JJNj7R_Y3i4P8YUX"
 
@@ -14,6 +11,7 @@ const playlistContentClassNameDeeper = "JUa6JJNj7R_Y3i4P8YUX"
 const weightedSwitchTemplateString = `<label class="x-toggle-wrapper x-settings-secondColumn"><input id="weightedSwitch" class="x-toggle-input" type="checkbox"><span class="x-toggle-indicatorWrapper"><span class="x-toggle-indicator"></span></span></label>`
 const weightButtonTemplateString = `<input type="button" class="weight-slider-access-button" value="Weight" style="background-color:#121212;"`
 const weightSliderPopupTemplateString = `<div class="weight-slider-popup" style="z-index: 10000; position: absolute; inset: 0px auto auto 0px; margin: 0px; transform: translate(200px, 200px); background-color:Tomato; border-radius: 10px;"> <p>Weight: </p> <div class="slidecontainer"> <input type="range" min="0.01" max="100" value="1" class="slider" id="myRange"> </div> </div>`
+
 //Const names
 const weightedSwitchName = "weightedSwitch";
 const weightedSwitchSearch = "#weightedSwitch";
@@ -29,7 +27,6 @@ var selectedSong = ""
 var selectedPlaylistContents : any
 var lastAdded = "noID";
 var lastPlaylist = "noID"
-var skippingDebounce = false
 
 //Helper Functions
 function htmlToElement(html: string) {
@@ -90,8 +87,6 @@ async function addWeightedSwitch()
   if(document.querySelector("#" + weightedSwitchName))
     return;
 
-  //console.log("i think a playlist is selected so i'm tryna add a button");
-
   //Reference Action Bar
   var playlistActionBar = document.querySelector(".main-actionBar-ActionBarRow")
 
@@ -108,7 +103,7 @@ async function addWeightedSwitch()
   var thisWeightedness = weightedness[getCurrentPlaylistID()]
   if(thisWeightedness === undefined)
     thisWeightedness = false
-  //console.log("setting to " + thisWeightedness.toString())
+
   //for some reason it's not set it to false, must remove to turn it off
   if(thisWeightedness)
     document.querySelector(weightedSwitchSearch)?.setAttribute("checked", '')
@@ -187,12 +182,9 @@ const weightSliderPopupString =
 
 async function initializeWeightsForPlaylist(id: string)
 {
-  //console.log(`assessing: ${weights[id]} to be ${(weights[id]) != undefined} `)
-
   //if this playlist already has weights, don't redo it.
   if(weights[id])
     return;
-
 
   //Grab the playlist content from spotify api
   var uri = Spicetify.URI.fromString(`spotify:playlist:${id}`);
@@ -216,11 +208,6 @@ async function initializeWeightsForPlaylist(id: string)
 //Function to create the weight slider popup window
 async function openWeightSliderPopup(e : any)
 {
-  //console.log(`current song is: ${selectedSong}`)
-  //console.log(e);
-  //console.log(e.target);
-  //console.log(document)
-
   //grab variables and insert them into string
   var x = e.x;
   var y = e.y;
@@ -253,7 +240,6 @@ async function openWeightSliderPopup(e : any)
   initialWeightText.textContent = `Weight: ${weights[currentPlaylistID][selectedSong]}`;
 
   //add event listeners for:
-
   //close button
   document.querySelector(`.weight-slider-x-button`)?.addEventListener(`click`, function()
   {
@@ -275,15 +261,13 @@ async function openWeightSliderPopup(e : any)
       return
     //Pull content
     var weight = e.target.value
+
     //Update text on the popup and it's button
     weightText.textContent = `Weight: ${weight}`;
     document.getElementById(`${selectedSong}`)?.setAttribute("value", weight);
-    //If the weight currently doesn't exist,
-    //if(!weights[currentPlaylistID])
-    //  weights[currentPlaylistID] = {"noID" : 0};
+
     //Set weight in playlist, with selectedsong in global from event handler
     weights[currentPlaylistID][selectedSong] = weight
-    //console.log(weights[currentPlaylistID])
     //Store in spicetify storage
     Spicetify.LocalStorage.set("weights", JSON.stringify(weights));
   })
@@ -305,14 +289,10 @@ async function addWeightSliders(playlistContents : any){
 
   //if the playlist isn't sorted by custom order, the row indices won't work
   var sortingOrderTextContent = document.querySelector(".w6j_vX6SF5IxSXrrkYw5")?.querySelector(".main-type-mesto")?.textContent
-  //console.log(sortingOrderTextContent)
   if(sortingOrderTextContent != 'Custom order')
   {
-    //console.log('improperly sorted');
     return
   }
-  //else
-  //  console.log('properly sorted');
 
   /*
   row
@@ -329,7 +309,6 @@ async function addWeightSliders(playlistContents : any){
   {
     //check if it already exists
     var count = playlistRows[i].firstChild?.childNodes[1].childNodes.length
-    //console.log(`row ${i} has ${count} els`)
     if(count == undefined)
       continue;
     if(count >= 3)
@@ -351,7 +330,7 @@ async function addWeightSliders(playlistContents : any){
     weightButton.addEventListener("click", setSelectedSong(uri))
     weightButton.addEventListener("click", openWeightSliderPopup)
     
-
+    //add weight button
     playlistRows[i].firstChild?.childNodes[1].appendChild(weightButton);
 
     //set the button's text to it's weight
@@ -490,8 +469,7 @@ async function removeFromQueue(index : number)
 }
 
 async function onSongChange(){
-
-  //wait a tiny little bit before doing anything
+  //wait a tiny little bit before doing anything for the playing context to properly update
   await new Promise(r => setTimeout(r, 250));
 
   //Get playing context
@@ -501,26 +479,25 @@ async function onSongChange(){
   var nextProvider = Spicetify.Platform.PlayerAPI._queue._state.nextTracks[1].provider
   var farProvider =  Spicetify.Platform.PlayerAPI._queue._state.nextTracks[2].provider
   var nextTrackID = Spicetify.Platform.PlayerAPI._queue._state.nextTracks[0].contextTrack.uri
+  //console.log(`context is ${context} with lastPlaylist ${lastPlaylist}`);
 
-  //first check if playlist changed
-  console.log(`context is ${context} with lastPlaylist ${lastPlaylist}`);
+  //Check for playlist change
   if(playlistURI != lastPlaylist)
   {
-    console.log("Playlist change!")
+    //console.log("Playlist change!")
     lastPlaylist = playlistURI
 
     //Switching playlists will add a song to queue, but it shouldn't! If there's already a queue, however, don't interfere with it.
     if(farProvider == "queue")
     {
-      console.log("Far provider is queue, returning.")
+      //console.log("Far provider is queue, returning.")
       return;
     }
 
-    //move queue removal to it's own function
+    //Remove the 0th song from queue
     removeFromQueue(0);
   }
-
-
+  
   //if there's already a queue, don't interfere with it.
   if(nextProvider == "queue")
   {
@@ -532,7 +509,6 @@ async function onSongChange(){
     console.log("Not interfering with the queue.");
     return;
   }
-
   
   if(context.includes("playlist"))
   {
@@ -556,14 +532,10 @@ async function onSongChange(){
 
     rollAndAdd(playlistURI);
   }
-
-  //Spicetify.Player.origin._queue.addToQueue(uris.map(track => { return { uri: track } }))
-  //setTimeout(() => { Spicetify.Player.origin._queue.addToQueue({uri : "spotify:track:18cCBvygH6yEFDY0cYN3wT"});
 }
 
 
 async function main() {
-
   //Add settings 
   settings = new SettingsSection("Song Weighting", "song-weights");
 
@@ -573,10 +545,6 @@ async function main() {
 
   //apply
   settings.pushSettings();
-
-  //clear weights for testing
-  //Spicetify.LocalStorage.set("weightedness", JSON.stringify({}));
-  //Spicetify.LocalStorage.set("weights", JSON.stringify({}));
 
   //pull weightedness and weights from localstorage
   var storedWeightedness = Spicetify.LocalStorage.get("weightedness")
@@ -592,7 +560,6 @@ async function main() {
   }
   weights = JSON.parse(storedWeights);
 
-  //game.isLoaded()
   while (!Spicetify?.showNotification) {
     await new Promise(resolve => setTimeout(resolve, 100));
   }
@@ -600,32 +567,15 @@ async function main() {
   // Initial scan on app load
   listenThenApply(Spicetify.Platform.History.location.pathname);
 
-  //
-  console.log(Spicetify.Platform.PlayerAPI.addToQueue)
-  console.log(Spicetify.Platform.PlayerAPI._queue)
-  //console.log(Spicetify.Player.origin._queue)
-
   // Listen for page navigation events
   Spicetify.Platform.History.listen(({ pathname } : any) => {
       listenThenApply(pathname);
   });
 
-
   //Establish modified playing
   //var playerPlayOGFunc = Spicetify.Platform.PlayerAPI.play.bind(Spicetify.Platform.PlayerAPI);
   Spicetify.Player.addEventListener("songchange", onSongChange)
 
-  //intercept remove from queue
-  //@ts-ignore
-  var ogremove = Spicetify.Player.origin._queue.removeFromQueue.bind(Spicetify.Player.origin._queue)
-  //@ts-ignore
-  Spicetify.Player.origin._queue.removeFromQueue = (e, t) => {
-      console.log("e: ");
-      console.log(e);
-      console.log("t: ");
-      console.log(t);
-      return ogremove(e, t);
-  }
 }
 
 export default main;
