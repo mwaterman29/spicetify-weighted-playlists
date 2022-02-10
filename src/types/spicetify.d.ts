@@ -245,6 +245,7 @@ declare namespace Spicetify {
          * Toggle Shuffle/No shuffle.
          */
         function toggleShuffle(): void;
+
     }
     /**
      * Adds a track/album or array of tracks/albums to prioritized queue.

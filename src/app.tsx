@@ -280,7 +280,7 @@ async function openWeightSliderPopup(e : any)
     //  weights[currentPlaylistID] = {"noID" : 0};
     //Set weight in playlist, with selectedsong in global from event handler
     weights[currentPlaylistID][selectedSong] = weight
-    console.log(weights[currentPlaylistID])
+    //console.log(weights[currentPlaylistID])
     //Store in spicetify storage
     Spicetify.LocalStorage.set("weights", JSON.stringify(weights));
   })
@@ -408,7 +408,7 @@ function listenThenApply(pathname: any) {
       const bar = document.querySelector('.main-actionBar-ActionBarRow');
       if(bar && pathname.includes("playlist"))
       {
-        console.log("i think a playlist is selected: " + pathname);
+        //console.log("i think a playlist is selected: " + pathname);
 
         //before anything else initialize weights so other things don't break
         getCurrentPlaylistID();
@@ -420,11 +420,45 @@ function listenThenApply(pathname: any) {
       }
       else
       {
-        console.log("i think a playlist is NOT selected.");
+        //console.log("i think a playlist is NOT selected.");
       }
   })
   // I need to include subtree because the Search page only has one child and the content is under there
   observer.observe(document,{ childList: true, subtree: true });
+}
+
+function pickNextSong(playlist: string)
+{
+
+  //pick song from weights
+  var playlistWeights = weights[playlist];
+
+  //sum weights
+  var weightSum = 0;
+  Object.entries(playlistWeights).forEach(
+    ([key, value]) => {
+      weightSum += Number(value)
+    }
+  );
+
+  //roll from [0, sumWeights] and choose accordingly
+  var roll = Math.random() * weightSum;
+  //console.log(`Weight sum is ${weightSum} and rolled ${roll}`);
+  var songResult;
+  Object.entries(playlistWeights).forEach(
+    ([key, value]) => {
+      roll -= Number(value);
+      //console.log(`roll is now ${roll} is ${roll <= 0}`)
+      if(roll <= 0)
+      {
+        //console.log(`selecting ${key}`);
+        songResult = key;
+        roll = 1000000000;
+        return;
+      }
+    }
+  );
+  return songResult;
 }
 
 async function main() {
@@ -466,25 +500,55 @@ async function main() {
   // Initial scan on app load
   listenThenApply(Spicetify.Platform.History.location.pathname);
 
+  //
+  console.log(Spicetify.Platform.PlayerAPI.addToQueue)
+  console.log(Spicetify.Platform.PlayerAPI._queue)
+  //console.log(Spicetify.Player.origin._queue)
+
   // Listen for page navigation events
   Spicetify.Platform.History.listen(({ pathname } : any) => {
       listenThenApply(pathname);
   });
 
-  // Show message on start.
-  //Spicetify.showNotification("test! 2");
 
-  var testButton : Spicetify.ContextMenu.Item = new Spicetify.ContextMenu.Item(
-    //Name
-    "Test Button",
-    //On Click Lambda
-    () =>
+  //Establish modified playing
+  var playerPlayOGFunc = Spicetify.Platform.PlayerAPI.play.bind(Spicetify.Platform.PlayerAPI);
+
+  Spicetify.Player.addEventListener("songchange", (param: any) => {
+    var provider = Spicetify.Platform.PlayerAPI._queue._state.nextTracks[0].provider
+    console.log(`provider is ${provider}`)
+
+    var context = Spicetify.Platform.PlayerAPI._state.context.uri
+    console.log(`context is ${context}`) 
+    if(context.includes("playlist"))
     {
-      Spicetify.showNotification("clicked the test button :)");
+      var playlistURI = context.split(':')[2];
+      if(weightedness[playlistURI] === undefined || weightedness[playlistURI] === null)
+      {
+        console.log(`Playlist ${playlistURI} does not have an entry in weightedness.`)
+        return;
+      }
+      else if(weightedness[playlistURI] === false)
+      {
+        console.log(`Playlist ${playlistURI} is unweighted`)
+        return;
+      }
+      else
+        console.log(`Playlist ${playlistURI} is weighted with weights ${weights[playlistURI]}`)
+
+      //roll and choose
+      var nextSong = pickNextSong(playlistURI);
+      console.log(`Next song is : ${nextSong}`)
+
+      //I literally don't know why this works but adding to queue by directly constructing the { uri: track } object does not, but so be it.
+      var uris = [`spotify:track:${nextSong}`];
+      //@ts-ignore -- VSCode does not accept that Player.origin exists
+      setTimeout(() => { Spicetify.Player.origin._queue.addToQueue(uris.map(track => { return { uri: track } })) }, 100);
     }
-  )
-  //Add to context menu
-  //testButton.register();
+
+    //Spicetify.Player.origin._queue.addToQueue(uris.map(track => { return { uri: track } }))
+    //setTimeout(() => { Spicetify.Player.origin._queue.addToQueue({uri : "spotify:track:18cCBvygH6yEFDY0cYN3wT"});
+  });
 }
 
 export default main;
