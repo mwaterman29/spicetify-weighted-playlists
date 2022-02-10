@@ -27,6 +27,9 @@ var weights : {[playlistId:string] : {[songId:string]: number}} = {};
 var currentPlaylistID : any
 var selectedSong = ""
 var selectedPlaylistContents : any
+var lastAdded = "noID";
+var lastPlaylist = "noID"
+var skippingDebounce = false
 
 //Helper Functions
 function htmlToElement(html: string) {
@@ -184,7 +187,7 @@ const weightSliderPopupString =
 
 async function initializeWeightsForPlaylist(id: string)
 {
-  console.log(`assessing: ${weights[id]} to be ${(weights[id]) != undefined} `)
+  //console.log(`assessing: ${weights[id]} to be ${(weights[id]) != undefined} `)
 
   //if this playlist already has weights, don't redo it.
   if(weights[id])
@@ -461,11 +464,100 @@ function pickNextSong(playlist: string)
   return songResult;
 }
 
+function rollAndAdd(playlistURI : string){
+  //roll and choose
+  var nextSong = pickNextSong(playlistURI);
+  console.log(`Next song is : ${nextSong}`)
+  //I literally don't know why this works but adding to queue by directly constructing the { uri: track } object does not, but so be it.
+  var uris = [`spotify:track:${nextSong}`];
+  //@ts-ignore -- VSCode does not accept that Player.origin exists
+  setTimeout(() => { Spicetify.Player.origin._queue.addToQueue(uris.map(track => { return { uri: track } })) }, 100);
+  //Store what was just picked
+  lastAdded = uris[0];
+}
+
+async function onSongChange(){
+
+  //Get playing context
+  var context = Spicetify.Platform.PlayerAPI._state.context.uri
+  var playlistURI = context.split(':')[2];
+  var provider = Spicetify.Platform.PlayerAPI._queue._state.nextTracks[0].provider
+  var nextProvider = Spicetify.Platform.PlayerAPI._queue._state.nextTracks[1].provider
+  var farProvider =  Spicetify.Platform.PlayerAPI._queue._state.nextTracks[2].provider
+  var nextTrackID = Spicetify.Platform.PlayerAPI._queue._state.nextTracks[0].contextTrack.uri
+
+  //first check if playlist changed
+  console.log(`context is ${context} with lastPlaylist ${lastPlaylist}`);
+  if(playlistURI != lastPlaylist)
+  {
+    console.log("Playlist change!")
+    lastPlaylist = playlistURI
+
+    //Switching playlists will add a song to queue, but it shouldn't! If there's already a queue, however, don't interfere with it.
+    if(farProvider == "queue")
+    {
+      console.log("Far provider is queue, returning.")
+      return;
+    }
+
+    var nextTrack = Spicetify.Platform.PlayerAPI._queue._state.nextTracks[0]
+    var uid = nextTrack.contextTrack.uid;
+    var uri = nextTrack.contextTrack.uri
+    var nextTrackObj = {uid, uri}
+    var nextTrackArr : any = [];
+    nextTrackArr[0] = nextTrackObj
+    console.log(nextTrackArr)
+    await new Promise(p => {setTimeout(() => { Spicetify.Player.origin._queue.removeFromQueue(nextTrackArr) }, 300) } );
+    
+
+  }
+
+
+  //if there's already a queue, don't interfere with it.
+  if(nextProvider == "queue")
+  {
+    console.log("Next is from queue - Not interfering with the queue.");
+    return;
+  }
+  if(provider == "queue" && nextTrackID != lastAdded)
+  {
+    console.log("Not interfering with the queue.");
+    return;
+  }
+
+  
+  if(context.includes("playlist"))
+  {
+    //Store last playlist to handle playlist changes
+    if(lastPlaylist != playlistURI)
+      console.log("Playlist Change!");
+    lastPlaylist = playlistURI
+
+    if(weightedness[playlistURI] === undefined || weightedness[playlistURI] === null)
+    {
+      console.log(`Playlist ${playlistURI} does not have an entry in weightedness.`)
+      return;
+    }
+    else if(weightedness[playlistURI] === false)
+    {
+      console.log(`Playlist ${playlistURI} is unweighted`)
+      return;
+    }
+    else
+      console.log(`Playlist ${playlistURI} is weighted with weights ${weights[playlistURI]}`)
+
+    rollAndAdd(playlistURI);
+  }
+
+  //Spicetify.Player.origin._queue.addToQueue(uris.map(track => { return { uri: track } }))
+  //setTimeout(() => { Spicetify.Player.origin._queue.addToQueue({uri : "spotify:track:18cCBvygH6yEFDY0cYN3wT"});
+}
+
+
 async function main() {
 
   //Add settings 
   settings = new SettingsSection("Song Weighting", "song-weights");
-
 
   //min and max weight
   settings.addInput("min-weight", "Minimum Song Weight", "0.25");
@@ -512,43 +604,20 @@ async function main() {
 
 
   //Establish modified playing
-  var playerPlayOGFunc = Spicetify.Platform.PlayerAPI.play.bind(Spicetify.Platform.PlayerAPI);
+  //var playerPlayOGFunc = Spicetify.Platform.PlayerAPI.play.bind(Spicetify.Platform.PlayerAPI);
+  Spicetify.Player.addEventListener("songchange", onSongChange)
 
-  Spicetify.Player.addEventListener("songchange", (param: any) => {
-    var provider = Spicetify.Platform.PlayerAPI._queue._state.nextTracks[0].provider
-    console.log(`provider is ${provider}`)
-
-    var context = Spicetify.Platform.PlayerAPI._state.context.uri
-    console.log(`context is ${context}`) 
-    if(context.includes("playlist"))
-    {
-      var playlistURI = context.split(':')[2];
-      if(weightedness[playlistURI] === undefined || weightedness[playlistURI] === null)
-      {
-        console.log(`Playlist ${playlistURI} does not have an entry in weightedness.`)
-        return;
-      }
-      else if(weightedness[playlistURI] === false)
-      {
-        console.log(`Playlist ${playlistURI} is unweighted`)
-        return;
-      }
-      else
-        console.log(`Playlist ${playlistURI} is weighted with weights ${weights[playlistURI]}`)
-
-      //roll and choose
-      var nextSong = pickNextSong(playlistURI);
-      console.log(`Next song is : ${nextSong}`)
-
-      //I literally don't know why this works but adding to queue by directly constructing the { uri: track } object does not, but so be it.
-      var uris = [`spotify:track:${nextSong}`];
-      //@ts-ignore -- VSCode does not accept that Player.origin exists
-      setTimeout(() => { Spicetify.Player.origin._queue.addToQueue(uris.map(track => { return { uri: track } })) }, 100);
-    }
-
-    //Spicetify.Player.origin._queue.addToQueue(uris.map(track => { return { uri: track } }))
-    //setTimeout(() => { Spicetify.Player.origin._queue.addToQueue({uri : "spotify:track:18cCBvygH6yEFDY0cYN3wT"});
-  });
+  //intercept remove from queue
+  //@ts-ignore
+  var ogremove = Spicetify.Player.origin._queue.removeFromQueue.bind(Spicetify.Player.origin._queue)
+  //@ts-ignore
+  Spicetify.Player.origin._queue.removeFromQueue = (e, t) => {
+      console.log("e: ");
+      console.log(e);
+      console.log("t: ");
+      console.log(t);
+      return ogremove(e, t);
+  }
 }
 
 export default main;
