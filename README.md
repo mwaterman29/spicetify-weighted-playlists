@@ -54,7 +54,7 @@ You can set the minimum and maximum weight in the settings.
 
 Made with Spicetify Creator
 
-- https://github.com/FlafyDev/spotify-css-editor
+- https://github.com/FlafyDev/spicetify-creator
 
 This extension borrows code and knowledge from other extension developers. Check them out!
 
