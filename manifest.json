@@ -1,0 +1,12 @@
+[
+    {
+      "name": "Weighted Playlists",
+      "description": "Spicetify extension to allow for a weighted shuffle. You can enable playlists to be weighted and the songs will play corresponding to their weight.",
+      "preview": "screenshot.png",
+      "main": "weighted-playlists.js",
+      "readme": "README.md",
+      "authors": [
+          { "name": "mwaterman29", "url": "https://github.com/mwaterman29" }
+      ]
+    }
+]
