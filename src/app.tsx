@@ -491,6 +491,9 @@ async function removeFromQueue(index : number)
 
 async function onSongChange(){
 
+  //wait a tiny little bit before doing anything
+  await new Promise(r => setTimeout(r, 250));
+
   //Get playing context
   var context = Spicetify.Platform.PlayerAPI._state.context.uri
   var playlistURI = context.split(':')[2];
@@ -515,7 +518,6 @@ async function onSongChange(){
 
     //move queue removal to it's own function
     removeFromQueue(0);
-
   }
 
 
