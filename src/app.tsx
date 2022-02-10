@@ -476,6 +476,19 @@ function rollAndAdd(playlistURI : string){
   lastAdded = uris[0];
 }
 
+async function removeFromQueue(index : number)
+{
+  var nextTrack = Spicetify.Platform.PlayerAPI._queue._state.nextTracks[index]
+  var uid = nextTrack.contextTrack.uid;
+  var uri = nextTrack.contextTrack.uri
+  var nextTrackObj = {uid, uri}
+  var nextTrackArr : any = [];
+  nextTrackArr[0] = nextTrackObj
+  console.log(nextTrackArr)
+  //@ts-ignore
+  await new Promise(p => {setTimeout(() => { Spicetify.Player.origin._queue.removeFromQueue(nextTrackArr) }, 300) } );
+}
+
 async function onSongChange(){
 
   //Get playing context
@@ -500,15 +513,8 @@ async function onSongChange(){
       return;
     }
 
-    var nextTrack = Spicetify.Platform.PlayerAPI._queue._state.nextTracks[0]
-    var uid = nextTrack.contextTrack.uid;
-    var uri = nextTrack.contextTrack.uri
-    var nextTrackObj = {uid, uri}
-    var nextTrackArr : any = [];
-    nextTrackArr[0] = nextTrackObj
-    console.log(nextTrackArr)
-    await new Promise(p => {setTimeout(() => { Spicetify.Player.origin._queue.removeFromQueue(nextTrackArr) }, 300) } );
-    
+    //move queue removal to it's own function
+    removeFromQueue(0);
 
   }
 
