@@ -2,30 +2,30 @@ import React from "react";
 import { SettingsSection } from "spcr-settings";
 
 //Class names from the spotify app
-const actionBarFlexBoxClassName = "KodyK77Gzjb8NqPGpcgw" // name for  the space buffer
-const playlistContentClassName = "rezqw3Q4OEPB1m4rmwfw"
-const playlistContentClassNameDeeper = "JUa6JJNj7R_Y3i4P8YUX"
+const actionBarFlexBoxClassName = "KodyK77Gzjb8NqPGpcgw"; // name for  the space buffer
+const playlistContentClassName = "rezqw3Q4OEPB1m4rmwfw";
+const playlistContentClassNameDeeper = "JUa6JJNj7R_Y3i4P8YUX";
 
 //Template Strings 
-const weightedSwitchTemplateString = `<label class="x-toggle-wrapper x-settings-secondColumn"><input id="weightedSwitch" class="x-toggle-input" type="checkbox"><span class="x-toggle-indicatorWrapper"><span class="x-toggle-indicator"></span></span></label>`
-const weightButtonTemplateString = `<input type="button" class="weight-slider-access-button" value="Weight" style="background-color:#121212;"`
-const weightSliderPopupTemplateString = `<div class="weight-slider-popup" style="z-index: 10000; position: absolute; inset: 0px auto auto 0px; margin: 0px; transform: translate(200px, 200px); background-color:Tomato; border-radius: 10px;"> <p>Weight: </p> <div class="slidecontainer"> <input type="range" min="0.01" max="100" value="1" class="slider" id="myRange"> </div> </div>`
+const weightedSwitchTemplateString = `<label class="x-toggle-wrapper x-settings-secondColumn"><input id="weightedSwitch" class="x-toggle-input" type="checkbox"><span class="x-toggle-indicatorWrapper"><span class="x-toggle-indicator"></span></span></label>`;
+const weightButtonTemplateString = `<input type="button" class="weight-slider-access-button" value="Weight" style="background-color:#121212;"`;
+const weightSliderPopupTemplateString = `<div class="weight-slider-popup" style="z-index: 10000; position: absolute; inset: 0px auto auto 0px; margin: 0px; transform: translate(200px, 200px); background-color:Tomato; border-radius: 10px;"> <p>Weight: </p> <div class="slidecontainer"> <input type="range" min="0.01" max="100" value="1" class="slider" id="myRange"> </div> </div>`;
 
 //Const names
 const weightedSwitchName = "weightedSwitch";
 const weightedSwitchSearch = "#weightedSwitch";
 
 //Data Globals
-let settings : SettingsSection
+let settings : SettingsSection;
 let weightedness : {[id:string]: boolean} = {};
 let weights : {[playlistId:string] : {[songId:string]: number}} = {};
 
 //Misc Globals
-let currentPlaylistID : any
-let selectedSong = ""
-let selectedPlaylistContents : any
+let currentPlaylistID : any;
+let selectedSong = "";
+let selectedPlaylistContents : any;
 let lastAdded = "noID";
-let lastPlaylist = "noID"
+let lastPlaylist = "noID";
 
 //Helper Functions
 function htmlToElement(html: string) {
@@ -40,14 +40,14 @@ function getCurrentPlaylistID()
   //Check if currently on some sort of playable thing (has the action bar w/ the play button)
   const bar = document.querySelector('.main-actionBar-ActionBarRow');
   //Find pathname from DOM loc
-  const pathname : string = Spicetify.Platform.History.location.pathname
+  const pathname : string = Spicetify.Platform.History.location.pathname;
   //if it's a playlist
   if(bar && pathname.includes("playlist"))
   {
     //console.log("Pulling playlist ID from: " + pathname);
-    let id = pathname.substring(10, pathname.length)
-    currentPlaylistID = id
-    return id
+    let id = pathname.substring(10, pathname.length);
+    currentPlaylistID = id;
+    return id;
   }
   else
   {
@@ -61,12 +61,12 @@ function getCurrentPlaylistID()
 function toggleWeightedness(e : any)
 {
   //find playlist id, toggle it's weightedness in the weightedness array
-  let id = getCurrentPlaylistID()
+  let id = getCurrentPlaylistID();
   weightedness[id] = e.target.checked;
   console.log("Weighted: " + e.target.checked + " for " + id + " full weightedness: " + JSON.stringify(weightedness));
 
   //store in localstorage
-  Spicetify.LocalStorage.set("weightedness", JSON.stringify(weightedness))
+  Spicetify.LocalStorage.set("weightedness", JSON.stringify(weightedness));
 
   //if toggled on, add weight sliders
   if(weightedness[id])
@@ -75,7 +75,7 @@ function toggleWeightedness(e : any)
   }
   else
   {
-    removeWeightSliders()
+    removeWeightSliders();
   }
 }
 
@@ -87,7 +87,7 @@ async function addWeightedSwitch()
     return;
 
   //Reference Action Bar
-  let playlistActionBar = document.querySelector(".main-actionBar-ActionBarRow")
+  let playlistActionBar = document.querySelector(".main-actionBar-ActionBarRow");
 
   //Generate switch from template string
   let testSwitch = htmlToElement(weightedSwitchTemplateString);
@@ -95,22 +95,22 @@ async function addWeightedSwitch()
     return;
 
   //Find the flex box next to the buttons on the playlist bar which for some reason has the name "KodyK77Gzjb8NqPGpcgw" (very well might change with update)
-  let spaceBuffer = document.querySelector(".KodyK77Gzjb8NqPGpcgw")
-  let addedSwitch = playlistActionBar?.insertBefore(testSwitch, spaceBuffer)
+  let spaceBuffer = document.querySelector(".KodyK77Gzjb8NqPGpcgw");
+  let addedSwitch = playlistActionBar?.insertBefore(testSwitch, spaceBuffer);
    
   //Initialize value from weightedness
-  let thisWeightedness = weightedness[getCurrentPlaylistID()]
+  let thisWeightedness = weightedness[getCurrentPlaylistID()];
   if(thisWeightedness === undefined)
-    thisWeightedness = false
+    thisWeightedness = false;
 
   //for some reason it's not set it to false, must remove to turn it off
   if(thisWeightedness)
-    document.querySelector(weightedSwitchSearch)?.setAttribute("checked", '')
+    document.querySelector(weightedSwitchSearch)?.setAttribute("checked", '');
   else
-    document.querySelector(weightedSwitchSearch)?.removeAttribute("checked")
+    document.querySelector(weightedSwitchSearch)?.removeAttribute("checked");
 
   //Add event listener to the added switch
-  addedSwitch?.addEventListener('input', toggleWeightedness)
+  addedSwitch?.addEventListener('input', toggleWeightedness);
 }
 
 //Weight Slider Popup:
@@ -177,7 +177,7 @@ const weightSliderPopupString =
     <input type="range" min="0.01" max="100" step="0.01" value="1" class="weight-slider" id="myRange">
   </div> 
 </div>
-`
+`;
 
 async function initializeWeightsForPlaylist(id: string)
 {
@@ -190,10 +190,10 @@ async function initializeWeightsForPlaylist(id: string)
   const res = await Spicetify.CosmosAsync.get(`sp://core-playlist/v1/playlist/${uri.toString()}/rows`, {
             policy: { link: true },
         });
-  selectedPlaylistContents = res.rows
+  selectedPlaylistContents = res.rows;
 
   //set weights[id] to blank
-  weights[id] = {}
+  weights[id] = {};
 
   //fill in each song to have default weight of 1
   for(let i = 0; i < selectedPlaylistContents.length; i++)
@@ -212,24 +212,24 @@ async function openWeightSliderPopup(e : any)
   let y = e.y;
 
   //stick into style attribute
-  let popupPositioningStyleString = `transform: translate(${x}px, ${y}px)`
+  let popupPositioningStyleString = `transform: translate(${x}px, ${y}px)`;
 
   //Create the element
   let popup = htmlToElement(weightSliderPopupString);
   if(!popup)
-    return
+    return;
 
   //if it already exists, remove it
-  document.querySelector(`.weight-slider-popup`)?.remove()
+  document.querySelector(`.weight-slider-popup`)?.remove();
 
   //add popup to window
-  let popupNode = document.querySelector("body")?.appendChild(popup)
+  let popupNode = document.querySelector("body")?.appendChild(popup);
 
   //set its position with style string
-  document.querySelector(`.weight-slider-popup`)?.setAttribute("style", popupPositioningStyleString)
+  document.querySelector(`.weight-slider-popup`)?.setAttribute("style", popupPositioningStyleString);
 
   //display current weight
-  let initialWeightText = document.querySelector(`.weight-text`)
+  let initialWeightText = document.querySelector(`.weight-text`);
   //error handling
   if(!initialWeightText)
       return
@@ -242,31 +242,31 @@ async function openWeightSliderPopup(e : any)
   //close button
   document.querySelector(`.weight-slider-x-button`)?.addEventListener(`click`, function()
   {
-    document.querySelector(`.weight-slider-popup`)?.remove()
+    document.querySelector(`.weight-slider-popup`)?.remove();
   })
 
   //set min, max, and current value on slider
-  let slider = document.querySelector(`.weight-slider`)
-  slider?.setAttribute("min", settings.getFieldValue("min-weight"))
-  slider?.setAttribute("max", settings.getFieldValue("max-weight"))
-  slider?.setAttribute("value", weights[currentPlaylistID][selectedSong].toString())
+  let slider = document.querySelector(`.weight-slider`);
+  slider?.setAttribute("min", settings.getFieldValue("min-weight"));
+  slider?.setAttribute("max", settings.getFieldValue("max-weight"));
+  slider?.setAttribute("value", weights[currentPlaylistID][selectedSong].toString());
   
   //weight change
   document.querySelector(`.weight-slider`)?.addEventListener(`input`, function(e : any)
   {
     //Find weight text
-    let weightText = document.querySelector(`.weight-text`)
+    let weightText = document.querySelector(`.weight-text`);
     if(!weightText)
-      return
+      return;
     //Pull content
-    let weight = e.target.value
+    let weight = e.target.value;
 
     //Update text on the popup and it's button
     weightText.textContent = `Weight: ${weight}`;
     document.getElementById(`${selectedSong}`)?.setAttribute("value", weight);
 
     //Set weight in playlist, with selectedsong in global from event handler
-    weights[currentPlaylistID][selectedSong] = weight
+    weights[currentPlaylistID][selectedSong] = weight;
     //Store in spicetify storage
     Spicetify.LocalStorage.set("weights", JSON.stringify(weights));
   })
@@ -276,7 +276,7 @@ async function openWeightSliderPopup(e : any)
 function setSelectedSong(uri : string)
 {
   return (e : any) => {
-    selectedSong = uri
+    selectedSong = uri;
     console.log(`current song is now ${uri}`);
   }
 }
@@ -284,13 +284,13 @@ function setSelectedSong(uri : string)
 async function addWeightSliders(playlistContents : any){
   //if the playlist isn't weighted, don't bother
   if(!weightedness[currentPlaylistID])
-    return
+    return;
 
   //if the playlist isn't sorted by custom order, the row indices won't work
-  let sortingOrderTextContent = document.querySelector(".w6j_vX6SF5IxSXrrkYw5")?.querySelector(".main-type-mesto")?.textContent
+  let sortingOrderTextContent = document.querySelector(".w6j_vX6SF5IxSXrrkYw5")?.querySelector(".main-type-mesto")?.textContent;
   if(sortingOrderTextContent != 'Custom order')
   {
-    return
+    return;
   }
 
   /*
@@ -301,23 +301,23 @@ async function addWeightSliders(playlistContents : any){
   */
 
   //get playlist rows
-  let playlistRows = playlistContents?.childNodes[1].childNodes
+  let playlistRows = playlistContents?.childNodes[1].childNodes;
   //console.log(`filling ${playlistRows.length} rows`)
 
   for(let i = 0; i < playlistRows.length; i++)
   {
     //check if it already exists
-    let count = playlistRows[i].firstChild?.childNodes[1].childNodes.length
+    let count = playlistRows[i].firstChild?.childNodes[1].childNodes.length;
     if(count == undefined)
       continue;
     if(count >= 3)
-    continue
+      continue;
 
     //pull uri
     let songIndex = playlistRows[i].getAttribute(`aria-rowindex`) - 2;
     if(!selectedPlaylistContents[songIndex])
     {
-      console.log(`can't find song at index ${songIndex}`)
+      console.log(`can't find song at index ${songIndex}`);
     }
     let uri = selectedPlaylistContents[songIndex].link.split(':')[2];
 
@@ -326,8 +326,8 @@ async function addWeightSliders(playlistContents : any){
       continue;
 
     //add event listener for opening the weight popup, and to set the current song
-    weightButton.addEventListener("click", setSelectedSong(uri))
-    weightButton.addEventListener("click", openWeightSliderPopup)
+    weightButton.addEventListener("click", setSelectedSong(uri));
+    weightButton.addEventListener("click", openWeightSliderPopup);
     
     //add weight button
     playlistRows[i].firstChild?.childNodes[1].appendChild(weightButton);
@@ -352,15 +352,15 @@ async function listenThenAddWeightSliders()
   await new Promise(r => setTimeout(r, 1000));
 
   //Grab the playlist content from spotify api
-  currentPlaylistID = getCurrentPlaylistID()
+  currentPlaylistID = getCurrentPlaylistID();
   let uri = Spicetify.URI.fromString(`spotify:playlist:${currentPlaylistID}`);
   const res = await Spicetify.CosmosAsync.get(`sp://core-playlist/v1/playlist/${uri.toString()}/rows`, {
             policy: { link: true },
         });
-  selectedPlaylistContents = res.rows 
+  selectedPlaylistContents = res.rows; 
 
   //Grab the playlist content divs
-  const playlistContents = document.querySelector("." + playlistContentClassName)?.querySelector("." + playlistContentClassNameDeeper)
+  const playlistContents = document.querySelector("." + playlistContentClassName)?.querySelector("." + playlistContentClassNameDeeper);
   if(!playlistContents)
     return;
 
@@ -372,12 +372,12 @@ async function listenThenAddWeightSliders()
   }
 
   //put the sliders there initially
-  addWeightSliders(playlistContents)
+  addWeightSliders(playlistContents);
 
   //when the page changes, it should add sliders
   const observer = new MutationObserver(function appchange(){
-    getCurrentPlaylistID()
-    addWeightSliders(playlistContents)
+    getCurrentPlaylistID();
+    addWeightSliders(playlistContents);
   })
   observer.observe(playlistRowsParent,{ childList: true, subtree: true });
 }
@@ -443,7 +443,7 @@ function pickNextSong(playlist: string)
 function rollAndAdd(playlistURI : string){
   //roll and choose
   let nextSong = pickNextSong(playlistURI);
-  console.log(`Next song is : ${nextSong}`)
+  console.log(`Next song is : ${nextSong}`);
   //I literally don't know why this works but adding to queue by directly constructing the { uri: track } object does not, but so be it.
   let uris = [`spotify:track:${nextSong}`];
   //@ts-ignore -- VSCode does not accept that Player.origin exists
@@ -454,13 +454,13 @@ function rollAndAdd(playlistURI : string){
 
 async function removeFromQueue(index : number)
 {
-  let nextTrack = Spicetify.Platform.PlayerAPI._queue._state.nextTracks[index]
+  let nextTrack = Spicetify.Platform.PlayerAPI._queue._state.nextTracks[index];
   let uid = nextTrack.contextTrack.uid;
-  let uri = nextTrack.contextTrack.uri
-  let nextTrackObj = {uid, uri}
+  let uri = nextTrack.contextTrack.uri;
+  let nextTrackObj = {uid, uri};
   let nextTrackArr : any = [];
-  nextTrackArr[0] = nextTrackObj
-  console.log(nextTrackArr)
+  nextTrackArr[0] = nextTrackObj;
+  console.log(nextTrackArr);
   //@ts-ignore
   await new Promise(p => {setTimeout(() => { Spicetify.Player.origin._queue.removeFromQueue(nextTrackArr) }, 300) } );
 }
@@ -470,19 +470,19 @@ async function onSongChange(){
   await new Promise(r => setTimeout(r, 250));
 
   //Get playing context
-  let context = Spicetify.Platform.PlayerAPI._state.context.uri
+  let context = Spicetify.Platform.PlayerAPI._state.context.uri;
   let playlistURI = context.split(':')[2];
-  let provider = Spicetify.Platform.PlayerAPI._queue._state.nextTracks[0].provider
-  let nextProvider = Spicetify.Platform.PlayerAPI._queue._state.nextTracks[1].provider
-  let farProvider =  Spicetify.Platform.PlayerAPI._queue._state.nextTracks[2].provider
-  let nextTrackID = Spicetify.Platform.PlayerAPI._queue._state.nextTracks[0].contextTrack.uri
+  let provider = Spicetify.Platform.PlayerAPI._queue._state.nextTracks[0].provider;
+  let nextProvider = Spicetify.Platform.PlayerAPI._queue._state.nextTracks[1].provider;
+  let farProvider =  Spicetify.Platform.PlayerAPI._queue._state.nextTracks[2].provider;
+  let nextTrackID = Spicetify.Platform.PlayerAPI._queue._state.nextTracks[0].contextTrack.uri;
   //console.log(`context is ${context} with lastPlaylist ${lastPlaylist}`);
 
   //Check for playlist change
   if(playlistURI != lastPlaylist)
   {
     //console.log("Playlist change!")
-    lastPlaylist = playlistURI
+    lastPlaylist = playlistURI;
 
     //Switching playlists will add a song to queue, but it shouldn't! If there's already a queue, however, don't interfere with it.
     if(farProvider == "queue")
@@ -512,20 +512,20 @@ async function onSongChange(){
     //Store last playlist to handle playlist changes
     if(lastPlaylist != playlistURI)
       console.log("Playlist Change!");
-    lastPlaylist = playlistURI
+    lastPlaylist = playlistURI;
 
     if(weightedness[playlistURI] === undefined || weightedness[playlistURI] === null)
     {
-      console.log(`Playlist ${playlistURI} does not have an entry in weightedness.`)
+      console.log(`Playlist ${playlistURI} does not have an entry in weightedness.`);
       return;
     }
     else if(weightedness[playlistURI] === false)
     {
-      console.log(`Playlist ${playlistURI} is unweighted`)
+      console.log(`Playlist ${playlistURI} is unweighted`);
       return;
     }
     else
-      console.log(`Playlist ${playlistURI} is weighted with weights ${weights[playlistURI]}`)
+      console.log(`Playlist ${playlistURI} is weighted with weights ${weights[playlistURI]}`);
 
     rollAndAdd(playlistURI);
   }
@@ -549,7 +549,7 @@ async function main() {
       Spicetify.LocalStorage.set("weightedness", JSON.stringify({}));
     else
       weightedness = JSON.parse(storedWeightedness);
-  let storedWeights = Spicetify.LocalStorage.get("weights")
+  let storedWeights = Spicetify.LocalStorage.get("weights");
   if(!storedWeights)
   {
     storedWeights = JSON.stringify({});
@@ -571,7 +571,7 @@ async function main() {
 
   //Establish modified playing
   //let playerPlayOGFunc = Spicetify.Platform.PlayerAPI.play.bind(Spicetify.Platform.PlayerAPI);
-  Spicetify.Player.addEventListener("songchange", onSongChange)
+  Spicetify.Player.addEventListener("songchange", onSongChange);
 
 }
 
