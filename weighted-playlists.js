@@ -30,6 +30,8 @@ if (x === "react-dom") return Spicetify.ReactDOM;
   // node_modules/spcr-settings/settingsSection.tsx
   var import_react = __toESM(__require("react"));
   var import_react_dom = __toESM(__require("react-dom"));
+
+  // postcss-module:C:\Users\Matt\AppData\Local\Temp\tmp-39112-fkePShBP64tU\1813aed59c10\settings.module.css
   var settings_module_default = { "settingsContainer": "settings-module__settingsContainer___e9wxn_weightedDplaylists" };
 
   // node_modules/spcr-settings/settingsSection.tsx
@@ -262,7 +264,7 @@ if (x === "react-dom") return Spicetify.ReactDOM;
   var lastAdded = "noID";
   var lastPlaylist = "noID";
   function htmlToElement(html) {
-    var template = document.createElement("template");
+    let template = document.createElement("template");
     html = html.trim();
     template.innerHTML = html;
     return template.content.firstChild;
@@ -271,7 +273,7 @@ if (x === "react-dom") return Spicetify.ReactDOM;
     const bar = document.querySelector(".main-actionBar-ActionBarRow");
     const pathname = Spicetify.Platform.History.location.pathname;
     if (bar && pathname.includes("playlist")) {
-      var id = pathname.substring(10, pathname.length);
+      let id = pathname.substring(10, pathname.length);
       currentPlaylistID = id;
       return id;
     } else {
@@ -280,7 +282,7 @@ if (x === "react-dom") return Spicetify.ReactDOM;
   }
   function toggleWeightedness(e) {
     var _a;
-    var id = getCurrentPlaylistID();
+    let id = getCurrentPlaylistID();
     weightedness[id] = e.target.checked;
     console.log("Weighted: " + e.target.checked + " for " + id + " full weightedness: " + JSON.stringify(weightedness));
     Spicetify.LocalStorage.set("weightedness", JSON.stringify(weightedness));
@@ -294,13 +296,13 @@ if (x === "react-dom") return Spicetify.ReactDOM;
     var _a, _b;
     if (document.querySelector("#" + weightedSwitchName))
       return;
-    var playlistActionBar = document.querySelector(".main-actionBar-ActionBarRow");
-    var testSwitch = htmlToElement(weightedSwitchTemplateString);
+    let playlistActionBar = document.querySelector(".main-actionBar-ActionBarRow");
+    let testSwitch = htmlToElement(weightedSwitchTemplateString);
     if (!testSwitch)
       return;
-    var spaceBuffer = document.querySelector(".KodyK77Gzjb8NqPGpcgw");
-    var addedSwitch = playlistActionBar == null ? void 0 : playlistActionBar.insertBefore(testSwitch, spaceBuffer);
-    var thisWeightedness = weightedness[getCurrentPlaylistID()];
+    let spaceBuffer = document.querySelector(".KodyK77Gzjb8NqPGpcgw");
+    let addedSwitch = playlistActionBar == null ? void 0 : playlistActionBar.insertBefore(testSwitch, spaceBuffer);
+    let thisWeightedness = weightedness[getCurrentPlaylistID()];
     if (thisWeightedness === void 0)
       thisWeightedness = false;
     if (thisWeightedness)
@@ -375,29 +377,29 @@ if (x === "react-dom") return Spicetify.ReactDOM;
   async function initializeWeightsForPlaylist(id) {
     if (weights[id])
       return;
-    var uri = Spicetify.URI.fromString(`spotify:playlist:${id}`);
+    let uri = Spicetify.URI.fromString(`spotify:playlist:${id}`);
     const res = await Spicetify.CosmosAsync.get(`sp://core-playlist/v1/playlist/${uri.toString()}/rows`, {
       policy: { link: true }
     });
     selectedPlaylistContents = res.rows;
     weights[id] = {};
     for (let i = 0; i < selectedPlaylistContents.length; i++) {
-      var songId = selectedPlaylistContents[i].link.split(":")[2];
+      let songId = selectedPlaylistContents[i].link.split(":")[2];
       weights[id][songId] = 1;
     }
   }
   async function openWeightSliderPopup(e) {
     var _a, _b, _c, _d, _e;
-    var x = e.x;
-    var y = e.y;
-    var popupPositioningStyleString = `transform: translate(${x}px, ${y}px)`;
-    var popup = htmlToElement(weightSliderPopupString);
+    let x = e.x;
+    let y = e.y;
+    let popupPositioningStyleString = `transform: translate(${x}px, ${y}px)`;
+    let popup = htmlToElement(weightSliderPopupString);
     if (!popup)
       return;
     (_a = document.querySelector(`.weight-slider-popup`)) == null ? void 0 : _a.remove();
-    var popupNode = (_b = document.querySelector("body")) == null ? void 0 : _b.appendChild(popup);
+    let popupNode = (_b = document.querySelector("body")) == null ? void 0 : _b.appendChild(popup);
     (_c = document.querySelector(`.weight-slider-popup`)) == null ? void 0 : _c.setAttribute("style", popupPositioningStyleString);
-    var initialWeightText = document.querySelector(`.weight-text`);
+    let initialWeightText = document.querySelector(`.weight-text`);
     if (!initialWeightText)
       return;
     if (!weights[currentPlaylistID][selectedSong])
@@ -407,16 +409,16 @@ if (x === "react-dom") return Spicetify.ReactDOM;
       var _a2;
       (_a2 = document.querySelector(`.weight-slider-popup`)) == null ? void 0 : _a2.remove();
     });
-    var slider = document.querySelector(`.weight-slider`);
+    let slider = document.querySelector(`.weight-slider`);
     slider == null ? void 0 : slider.setAttribute("min", settings.getFieldValue("min-weight"));
     slider == null ? void 0 : slider.setAttribute("max", settings.getFieldValue("max-weight"));
     slider == null ? void 0 : slider.setAttribute("value", weights[currentPlaylistID][selectedSong].toString());
     (_e = document.querySelector(`.weight-slider`)) == null ? void 0 : _e.addEventListener(`input`, function(e2) {
       var _a2;
-      var weightText = document.querySelector(`.weight-text`);
+      let weightText = document.querySelector(`.weight-text`);
       if (!weightText)
         return;
-      var weight = e2.target.value;
+      let weight = e2.target.value;
       weightText.textContent = `Weight: ${weight}`;
       (_a2 = document.getElementById(`${selectedSong}`)) == null ? void 0 : _a2.setAttribute("value", weight);
       weights[currentPlaylistID][selectedSong] = weight;
@@ -433,29 +435,30 @@ if (x === "react-dom") return Spicetify.ReactDOM;
     var _a, _b, _c, _d;
     if (!weightedness[currentPlaylistID])
       return;
-    var sortingOrderTextContent = (_b = (_a = document.querySelector(".w6j_vX6SF5IxSXrrkYw5")) == null ? void 0 : _a.querySelector(".main-type-mesto")) == null ? void 0 : _b.textContent;
+    let sortingOrderTextContent = (_b = (_a = document.querySelector(".w6j_vX6SF5IxSXrrkYw5")) == null ? void 0 : _a.firstChild) == null ? void 0 : _b.textContent;
     if (sortingOrderTextContent != "Custom order") {
+      console.log(sortingOrderTextContent);
       return;
     }
-    var playlistRows = playlistContents == null ? void 0 : playlistContents.childNodes[1].childNodes;
+    let playlistRows = playlistContents == null ? void 0 : playlistContents.childNodes[1].childNodes;
     for (let i = 0; i < playlistRows.length; i++) {
-      var count = (_c = playlistRows[i].firstChild) == null ? void 0 : _c.childNodes[1].childNodes.length;
+      let count = (_c = playlistRows[i].firstChild) == null ? void 0 : _c.childNodes[1].childNodes.length;
       if (count == void 0)
         continue;
       if (count >= 3)
         continue;
-      var songIndex = playlistRows[i].getAttribute(`aria-rowindex`) - 2;
+      let songIndex = playlistRows[i].getAttribute(`aria-rowindex`) - 2;
       if (!selectedPlaylistContents[songIndex]) {
         console.log(`can't find song at index ${songIndex}`);
       }
-      var uri = selectedPlaylistContents[songIndex].link.split(":")[2];
-      var weightButton = htmlToElement(weightButtonTemplateString + `id="${uri}">`);
+      let uri = selectedPlaylistContents[songIndex].link.split(":")[2];
+      let weightButton = htmlToElement(weightButtonTemplateString + `id="${uri}">`);
       if (!weightButton)
         continue;
       weightButton.addEventListener("click", setSelectedSong(uri));
       weightButton.addEventListener("click", openWeightSliderPopup);
       (_d = playlistRows[i].firstChild) == null ? void 0 : _d.childNodes[1].appendChild(weightButton);
-      var button = document.getElementById(`${uri}`);
+      let button = document.getElementById(`${uri}`);
       if (button)
         button.setAttribute("value", `${weights[currentPlaylistID][uri]}`);
     }
@@ -469,7 +472,7 @@ if (x === "react-dom") return Spicetify.ReactDOM;
     var _a;
     await new Promise((r) => setTimeout(r, 1e3));
     currentPlaylistID = getCurrentPlaylistID();
-    var uri = Spicetify.URI.fromString(`spotify:playlist:${currentPlaylistID}`);
+    let uri = Spicetify.URI.fromString(`spotify:playlist:${currentPlaylistID}`);
     const res = await Spicetify.CosmosAsync.get(`sp://core-playlist/v1/playlist/${uri.toString()}/rows`, {
       policy: { link: true }
     });
@@ -477,7 +480,7 @@ if (x === "react-dom") return Spicetify.ReactDOM;
     const playlistContents = (_a = document.querySelector("." + playlistContentClassName)) == null ? void 0 : _a.querySelector("." + playlistContentClassNameDeeper);
     if (!playlistContents)
       return;
-    var playlistRowsParent = playlistContents == null ? void 0 : playlistContents.childNodes[1];
+    let playlistRowsParent = playlistContents == null ? void 0 : playlistContents.childNodes[1];
     while (!playlistRowsParent) {
       playlistRowsParent = playlistContents == null ? void 0 : playlistContents.childNodes[1];
       await new Promise((r) => setTimeout(r, 100));
@@ -504,13 +507,13 @@ if (x === "react-dom") return Spicetify.ReactDOM;
     observer.observe(document, { childList: true, subtree: true });
   }
   function pickNextSong(playlist) {
-    var playlistWeights = weights[playlist];
-    var weightSum = 0;
+    let playlistWeights = weights[playlist];
+    let weightSum = 0;
     Object.entries(playlistWeights).forEach(([key, value]) => {
       weightSum += Number(value);
     });
-    var roll = Math.random() * weightSum;
-    var songResult;
+    let roll = Math.random() * weightSum;
+    let songResult;
     Object.entries(playlistWeights).forEach(([key, value]) => {
       roll -= Number(value);
       if (roll <= 0) {
@@ -522,9 +525,9 @@ if (x === "react-dom") return Spicetify.ReactDOM;
     return songResult;
   }
   function rollAndAdd(playlistURI) {
-    var nextSong = pickNextSong(playlistURI);
+    let nextSong = pickNextSong(playlistURI);
     console.log(`Next song is : ${nextSong}`);
-    var uris = [`spotify:track:${nextSong}`];
+    let uris = [`spotify:track:${nextSong}`];
     setTimeout(() => {
       Spicetify.Player.origin._queue.addToQueue(uris.map((track) => {
         return { uri: track };
@@ -533,11 +536,11 @@ if (x === "react-dom") return Spicetify.ReactDOM;
     lastAdded = uris[0];
   }
   async function removeFromQueue(index) {
-    var nextTrack = Spicetify.Platform.PlayerAPI._queue._state.nextTracks[index];
-    var uid = nextTrack.contextTrack.uid;
-    var uri = nextTrack.contextTrack.uri;
-    var nextTrackObj = { uid, uri };
-    var nextTrackArr = [];
+    let nextTrack = Spicetify.Platform.PlayerAPI._queue._state.nextTracks[index];
+    let uid = nextTrack.contextTrack.uid;
+    let uri = nextTrack.contextTrack.uri;
+    let nextTrackObj = { uid, uri };
+    let nextTrackArr = [];
     nextTrackArr[0] = nextTrackObj;
     console.log(nextTrackArr);
     await new Promise((p) => {
@@ -548,12 +551,12 @@ if (x === "react-dom") return Spicetify.ReactDOM;
   }
   async function onSongChange() {
     await new Promise((r) => setTimeout(r, 250));
-    var context = Spicetify.Platform.PlayerAPI._state.context.uri;
-    var playlistURI = context.split(":")[2];
-    var provider = Spicetify.Platform.PlayerAPI._queue._state.nextTracks[0].provider;
-    var nextProvider = Spicetify.Platform.PlayerAPI._queue._state.nextTracks[1].provider;
-    var farProvider = Spicetify.Platform.PlayerAPI._queue._state.nextTracks[2].provider;
-    var nextTrackID = Spicetify.Platform.PlayerAPI._queue._state.nextTracks[0].contextTrack.uri;
+    let context = Spicetify.Platform.PlayerAPI._state.context.uri;
+    let playlistURI = context.split(":")[2];
+    let provider = Spicetify.Platform.PlayerAPI._queue._state.nextTracks[0].provider;
+    let nextProvider = Spicetify.Platform.PlayerAPI._queue._state.nextTracks[1].provider;
+    let farProvider = Spicetify.Platform.PlayerAPI._queue._state.nextTracks[2].provider;
+    let nextTrackID = Spicetify.Platform.PlayerAPI._queue._state.nextTracks[0].contextTrack.uri;
     if (playlistURI != lastPlaylist) {
       lastPlaylist = playlistURI;
       if (farProvider == "queue") {
@@ -589,12 +592,12 @@ if (x === "react-dom") return Spicetify.ReactDOM;
     settings.addInput("min-weight", "Minimum Song Weight", "0.25");
     settings.addInput("max-weight", "Maximum Song Weight", "10");
     settings.pushSettings();
-    var storedWeightedness = Spicetify.LocalStorage.get("weightedness");
+    let storedWeightedness = Spicetify.LocalStorage.get("weightedness");
     if (!storedWeightedness)
       Spicetify.LocalStorage.set("weightedness", JSON.stringify({}));
     else
       weightedness = JSON.parse(storedWeightedness);
-    var storedWeights = Spicetify.LocalStorage.get("weights");
+    let storedWeights = Spicetify.LocalStorage.get("weights");
     if (!storedWeights) {
       storedWeights = JSON.stringify({});
       Spicetify.LocalStorage.set("weights", JSON.stringify({}));
@@ -622,6 +625,7 @@ if (x === "react-dom") return Spicetify.ReactDOM;
       var el = document.createElement('style');
       el.id = `weightedDplaylists`;
       el.textContent = (String.raw`
+  /* C:/Users/Matt/AppData/Local/Temp/tmp-39112-fkePShBP64tU/1813aed59c10/settings.module.css */
 .settings-module__settingsContainer___e9wxn_weightedDplaylists {
   display: contents;
 }
