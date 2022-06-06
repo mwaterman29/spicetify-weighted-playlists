@@ -287,9 +287,10 @@ async function addWeightSliders(playlistContents : any){
     return;
 
   //if the playlist isn't sorted by custom order, the row indices won't work
-  let sortingOrderTextContent = document.querySelector(".w6j_vX6SF5IxSXrrkYw5")?.querySelector(".main-type-mesto")?.textContent;
+  let sortingOrderTextContent = document.querySelector(".w6j_vX6SF5IxSXrrkYw5")?.firstChild?.textContent //?.querySelector(".main-type-mesto")?.textContent;
   if(sortingOrderTextContent != 'Custom order')
   {
+    console.log(sortingOrderTextContent);
     return;
   }
 
