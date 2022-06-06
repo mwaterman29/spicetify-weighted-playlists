@@ -31,7 +31,7 @@ if (x === "react-dom") return Spicetify.ReactDOM;
   var import_react = __toESM(__require("react"));
   var import_react_dom = __toESM(__require("react-dom"));
 
-  // postcss-module:C:\Users\Matt\AppData\Local\Temp\tmp-39112-fkePShBP64tU\1813aed59c10\settings.module.css
+  // postcss-module:C:\Users\Matt\AppData\Local\Temp\tmp-25160-gfBlY7IKLQMH\1813b0f2e480\settings.module.css
   var settings_module_default = { "settingsContainer": "settings-module__settingsContainer___e9wxn_weightedDplaylists" };
 
   // node_modules/spcr-settings/settingsSection.tsx
@@ -399,6 +399,7 @@ if (x === "react-dom") return Spicetify.ReactDOM;
     (_a = document.querySelector(`.weight-slider-popup`)) == null ? void 0 : _a.remove();
     let popupNode = (_b = document.querySelector("body")) == null ? void 0 : _b.appendChild(popup);
     (_c = document.querySelector(`.weight-slider-popup`)) == null ? void 0 : _c.setAttribute("style", popupPositioningStyleString);
+    dragElement(document.querySelector(`.weight-slider-popup`));
     let initialWeightText = document.querySelector(`.weight-text`);
     if (!initialWeightText)
       return;
@@ -437,7 +438,6 @@ if (x === "react-dom") return Spicetify.ReactDOM;
       return;
     let sortingOrderTextContent = (_b = (_a = document.querySelector(".w6j_vX6SF5IxSXrrkYw5")) == null ? void 0 : _a.firstChild) == null ? void 0 : _b.textContent;
     if (sortingOrderTextContent != "Custom order") {
-      console.log(sortingOrderTextContent);
       return;
     }
     let playlistRows = playlistContents == null ? void 0 : playlistContents.childNodes[1].childNodes;
@@ -587,6 +587,32 @@ if (x === "react-dom") return Spicetify.ReactDOM;
       rollAndAdd(playlistURI);
     }
   }
+  function dragElement(elmnt) {
+    var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+    elmnt.onmousedown = dragMouseDown;
+    function dragMouseDown(e) {
+      e = e || window.event;
+      e.preventDefault();
+      pos3 = e.clientX;
+      pos4 = e.clientY;
+      document.onmouseup = closeDragElement;
+      document.onmousemove = elementDrag;
+    }
+    function elementDrag(e) {
+      e = e || window.event;
+      e.preventDefault();
+      pos1 = pos3 - e.clientX;
+      pos2 = pos4 - e.clientY;
+      pos3 = e.clientX;
+      pos4 = e.clientY;
+      elmnt.style.top = elmnt.offsetTop - pos2 + "px";
+      elmnt.style.left = elmnt.offsetLeft - pos1 + "px";
+    }
+    function closeDragElement() {
+      document.onmouseup = null;
+      document.onmousemove = null;
+    }
+  }
   async function main() {
     settings = new SettingsSection("Song Weighting", "song-weights");
     settings.addInput("min-weight", "Minimum Song Weight", "0.25");
@@ -625,7 +651,7 @@ if (x === "react-dom") return Spicetify.ReactDOM;
       var el = document.createElement('style');
       el.id = `weightedDplaylists`;
       el.textContent = (String.raw`
-  /* C:/Users/Matt/AppData/Local/Temp/tmp-39112-fkePShBP64tU/1813aed59c10/settings.module.css */
+  /* C:/Users/Matt/AppData/Local/Temp/tmp-25160-gfBlY7IKLQMH/1813b0f2e480/settings.module.css */
 .settings-module__settingsContainer___e9wxn_weightedDplaylists {
   display: contents;
 }
