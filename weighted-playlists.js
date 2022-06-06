@@ -5,7 +5,6 @@ var weightedDplaylists = (() => {
   var __getOwnPropNames = Object.getOwnPropertyNames;
   var __getProtoOf = Object.getPrototypeOf;
   var __hasOwnProp = Object.prototype.hasOwnProperty;
-  var __markAsModule = (target) => __defProp(target, "__esModule", { value: true });
   var __require = /* @__PURE__ */ ((x) => typeof require !== "undefined" ? require : typeof Proxy !== "undefined" ? new Proxy(x, {
     get: (a, b) => (typeof require !== "undefined" ? require : a)[b]
   }) : x)(function(x) {
@@ -15,34 +14,34 @@ if (x === "react-dom") return Spicetify.ReactDOM;
       return require.apply(this, arguments);
     throw new Error('Dynamic require of "' + x + '" is not supported');
   });
-  var __reExport = (target, module, copyDefault, desc) => {
-    if (module && typeof module === "object" || typeof module === "function") {
-      for (let key of __getOwnPropNames(module))
-        if (!__hasOwnProp.call(target, key) && (copyDefault || key !== "default"))
-          __defProp(target, key, { get: () => module[key], enumerable: !(desc = __getOwnPropDesc(module, key)) || desc.enumerable });
+  var __copyProps = (to, from, except, desc) => {
+    if (from && typeof from === "object" || typeof from === "function") {
+      for (let key of __getOwnPropNames(from))
+        if (!__hasOwnProp.call(to, key) && key !== except)
+          __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
     }
-    return target;
+    return to;
   };
-  var __toESM = (module, isNodeMode) => {
-    return __reExport(__markAsModule(__defProp(module != null ? __create(__getProtoOf(module)) : {}, "default", !isNodeMode && module && module.__esModule ? { get: () => module.default, enumerable: true } : { value: module, enumerable: true })), module);
-  };
+  var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target, mod));
 
   // node_modules/spcr-settings/settingsSection.tsx
   var import_react = __toESM(__require("react"));
   var import_react_dom = __toESM(__require("react-dom"));
 
-  // postcss-module:C:\Users\Matt\AppData\Local\Temp\tmp-25160-gfBlY7IKLQMH\1813b0f2e480\settings.module.css
-  var settings_module_default = { "settingsContainer": "settings-module__settingsContainer___e9wxn_weightedDplaylists" };
+  // postcss-module:C:\Users\Matt\AppData\Local\Temp\tmp-37060-o7AFA3z46kxY\1813b4585760\settings.module.css
+  var settings_module_default = { "settingsContainer": "settings-module__settingsContainer___e9wxn_weightedDplaylists", "heading": "settings-module__heading___AnER-_weightedDplaylists", "description": "settings-module__description___dP4fR_weightedDplaylists", "inputWrapper": "settings-module__inputWrapper___LgOrw_weightedDplaylists" };
 
   // node_modules/spcr-settings/settingsSection.tsx
   var SettingsSection = class {
-    constructor(name, settingsId) {
+    constructor(name, settingsId, initialSettingsFields = {}) {
       this.name = name;
       this.settingsId = settingsId;
-      this.settingsFields = {};
+      this.initialSettingsFields = initialSettingsFields;
+      this.settingsFields = this.initialSettingsFields;
       this.setRerender = null;
+      this.buttonClassnames = null;
       this.pushSettings = async () => {
-        Object.entries(this.settingsFields).map(([nameId, field]) => {
+        Object.entries(this.settingsFields).forEach(([nameId, field]) => {
           if (field.type !== "button" && this.getFieldValue(nameId) === void 0) {
             this.setFieldValue(nameId, field.defaultValue);
           }
@@ -72,61 +71,41 @@ if (x === "react-dom") return Spicetify.ReactDOM;
             return;
           await new Promise((resolve) => setTimeout(resolve, 100));
         }
-        const allSettingsContainer = document.getElementsByClassName("x-settings-container")[0];
-        let pluginSettingsContainer = null;
-        for (let i = 0; i < allSettingsContainer.children.length; i++) {
-          if (allSettingsContainer.children[i].id === this.settingsId) {
-            pluginSettingsContainer = allSettingsContainer.children[i];
-          }
-        }
+        const allSettingsContainer = document.querySelector(".main-view-container__scroll-node-child main div");
+        if (!allSettingsContainer)
+          return console.error("[spcr-settings] settings container not found");
+        this.buttonClassnames = Array.from(allSettingsContainer.querySelectorAll(":scope > button")).at(-1)?.className ?? null;
+        let pluginSettingsContainer = Array.from(allSettingsContainer.children).find((child) => child.id === this.settingsId);
         if (!pluginSettingsContainer) {
           pluginSettingsContainer = document.createElement("div");
           pluginSettingsContainer.id = this.settingsId;
           pluginSettingsContainer.className = settings_module_default.settingsContainer;
-          let advancedOptionsButton = null;
-          let tries = 0;
-          while (true) {
-            try {
-              const buttons = allSettingsContainer.getElementsByClassName("x-settings-button");
-              for (let i = 0; i < buttons.length; i++) {
-                if (buttons[i].children[0]?.textContent?.toLowerCase().endsWith("advanced settings")) {
-                  advancedOptionsButton = buttons[i];
-                  break;
-                }
-              }
-            } catch (e) {
-              console.error('Error while finding "show advanced settings" button:', e);
-            }
-            if (advancedOptionsButton)
-              break;
-            if (Spicetify.Platform.History.location.pathname !== "/preferences") {
-              console.log(`Couldn't find "show advanced settings" button after ${tries} tries.`);
-              return;
-            }
-            tries++;
-            console.log(`Couldn't find "show advanced settings" button. Trying again in 1000ms...`);
-            await new Promise((resolve) => setTimeout(resolve, 1e3));
-          }
-          allSettingsContainer.insertBefore(pluginSettingsContainer, advancedOptionsButton);
+          allSettingsContainer.appendChild(pluginSettingsContainer);
         } else {
           console.log(pluginSettingsContainer);
         }
         import_react_dom.default.render(/* @__PURE__ */ import_react.default.createElement(this.FieldsContainer, null), pluginSettingsContainer);
       };
-      this.addButton = (nameId, description, value, onClick) => {
+      this.addButton = (nameId, description, value, onClick, events) => {
         this.settingsFields[nameId] = {
           type: "button",
           description,
-          defaultValue: value,
-          callback: onClick
+          value,
+          events: {
+            onClick,
+            ...events
+          }
         };
       };
-      this.addInput = (nameId, description, defaultValue, onChange) => {
+      this.addInput = (nameId, description, defaultValue, onChange, events) => {
         this.settingsFields[nameId] = {
           type: "input",
           description,
           defaultValue,
-          callback: onChange
+          events: {
+            onChange,
+            ...events
+          }
         };
       };
       this.addHidden = (nameId, defaultValue) => {
@@ -135,21 +114,27 @@ if (x === "react-dom") return Spicetify.ReactDOM;
           defaultValue
         };
       };
-      this.addToggle = (nameId, description, defaultValue, onInput) => {
+      this.addToggle = (nameId, description, defaultValue, onChange, events) => {
         this.settingsFields[nameId] = {
           type: "toggle",
           description,
           defaultValue,
-          callback: onInput
+          events: {
+            onChange,
+            ...events
+          }
         };
       };
-      this.addDropDown = (nameId, description, options, defaultIndex, onSelect) => {
+      this.addDropDown = (nameId, description, options, defaultIndex, onSelect, events) => {
         this.settingsFields[nameId] = {
           type: "dropdown",
           description,
           defaultValue: options[defaultIndex],
-          callback: onSelect,
-          options
+          options,
+          events: {
+            onSelect,
+            ...events
+          }
         };
       };
       this.getFieldValue = (nameId) => {
@@ -165,7 +150,7 @@ if (x === "react-dom") return Spicetify.ReactDOM;
           className: settings_module_default.settingsContainer,
           key: rerender
         }, /* @__PURE__ */ import_react.default.createElement("h2", {
-          className: "main-shelf-title main-type-cello"
+          className: ["main-shelf-title main-type-cello", settings_module_default.heading].join(" ")
         }, this.name), Object.entries(this.settingsFields).map(([nameId, field]) => {
           return /* @__PURE__ */ import_react.default.createElement(this.Field, {
             nameId,
@@ -177,7 +162,7 @@ if (x === "react-dom") return Spicetify.ReactDOM;
         const id = `${this.settingsId}.${props.nameId}`;
         let defaultStateValue;
         if (props.field.type === "button") {
-          defaultStateValue = props.field.defaultValue;
+          defaultStateValue = props.field.value;
         } else {
           defaultStateValue = this.getFieldValue(props.nameId);
         }
@@ -190,33 +175,40 @@ if (x === "react-dom") return Spicetify.ReactDOM;
             setValueState(newValue);
             this.setFieldValue(props.nameId, newValue);
           }
-          if (props.field.callback)
-            props.field.callback();
         };
         return /* @__PURE__ */ import_react.default.createElement(import_react.default.Fragment, null, /* @__PURE__ */ import_react.default.createElement("div", {
           className: "main-type-mesto",
           style: { color: "var(--spice-subtext)" }
         }, /* @__PURE__ */ import_react.default.createElement("label", {
+          className: settings_module_default.description,
           htmlFor: id
         }, props.field.description || "")), /* @__PURE__ */ import_react.default.createElement("span", {
-          className: "x-settings-secondColumn"
+          className: ["x-settings-secondColumn", settings_module_default.inputWrapper].join(" ")
         }, props.field.type === "input" ? /* @__PURE__ */ import_react.default.createElement("input", {
           className: "main-dropDown-dropDown",
           id,
           dir: "ltr",
           value,
           type: "text",
+          ...props.field.events,
           onChange: (e) => {
             setValue(e.currentTarget.value);
+            const onChange = props.field.events?.onChange;
+            if (onChange)
+              onChange(e);
           }
         }) : props.field.type === "button" ? /* @__PURE__ */ import_react.default.createElement("span", {
           className: ""
         }, /* @__PURE__ */ import_react.default.createElement("button", {
           id,
-          onClick: () => {
+          className: this.buttonClassnames ?? "",
+          ...props.field.events,
+          onClick: (e) => {
             setValue();
+            const onClick = props.field.events?.onClick;
+            if (onClick)
+              onClick(e);
           },
-          className: "main-buttons-button main-button-outlined",
           type: "button"
         }, value)) : props.field.type === "toggle" ? /* @__PURE__ */ import_react.default.createElement("label", {
           className: "x-toggle-wrapper x-settings-secondColumn"
@@ -225,8 +217,12 @@ if (x === "react-dom") return Spicetify.ReactDOM;
           className: "x-toggle-input",
           type: "checkbox",
           checked: value,
+          ...props.field.events,
           onClick: (e) => {
             setValue(e.currentTarget.checked);
+            const onClick = props.field.events?.onClick;
+            if (onClick)
+              onClick(e);
           }
         }), /* @__PURE__ */ import_react.default.createElement("span", {
           className: "x-toggle-indicatorWrapper"
@@ -235,8 +231,12 @@ if (x === "react-dom") return Spicetify.ReactDOM;
         }))) : props.field.type === "dropdown" ? /* @__PURE__ */ import_react.default.createElement("select", {
           className: "main-dropDown-dropDown",
           id,
+          ...props.field.events,
           onChange: (e) => {
             setValue(props.field.options[e.currentTarget.selectedIndex]);
+            const onChange = props.field.events?.onChange;
+            if (onChange)
+              onChange(e);
           }
         }, props.field.options.map((option, i) => {
           return /* @__PURE__ */ import_react.default.createElement("option", {
@@ -651,9 +651,24 @@ if (x === "react-dom") return Spicetify.ReactDOM;
       var el = document.createElement('style');
       el.id = `weightedDplaylists`;
       el.textContent = (String.raw`
-  /* C:/Users/Matt/AppData/Local/Temp/tmp-25160-gfBlY7IKLQMH/1813b0f2e480/settings.module.css */
+  /* C:/Users/Matt/AppData/Local/Temp/tmp-37060-o7AFA3z46kxY/1813b4585760/settings.module.css */
 .settings-module__settingsContainer___e9wxn_weightedDplaylists {
   display: contents;
+}
+.settings-module__heading___AnER-_weightedDplaylists {
+  grid-column: 1/-1;
+  font-size: 1.125rem;
+  line-height: 1.5rem;
+  color: #fff;
+  margin-top: 24px;
+}
+.settings-module__description___dP4fR_weightedDplaylists {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+.settings-module__inputWrapper___LgOrw_weightedDplaylists {
+  display: flex;
+  justify-self: end;
 }
 
       `).trim();
