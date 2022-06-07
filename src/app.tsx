@@ -535,12 +535,21 @@ async function onSongChange(){
 }
 
 function dragElement(elmnt : any) {
+  var oldmousemove = document.onmousemove;
+  var oldmouseup = document.onmouseup;
+
   var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
   elmnt.onmousedown = dragMouseDown;
 
   function dragMouseDown(e : any) {
     e = e || window.event;
-    e.preventDefault();
+
+    //don't move while touching slider
+    if(e.path[0].className == "weight-slider")
+    {
+      return;
+    }
+    //e.preventDefault();
     // get the mouse cursor position at startup:
     pos3 = e.clientX;
     pos4 = e.clientY;
@@ -551,7 +560,7 @@ function dragElement(elmnt : any) {
 
   function elementDrag(e : any) {
     e = e || window.event;
-    e.preventDefault();
+    //e.preventDefault();
     // calculate the new cursor position:
     pos1 = pos3 - e.clientX;
     pos2 = pos4 - e.clientY;
@@ -562,10 +571,11 @@ function dragElement(elmnt : any) {
     elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
   }
 
+  
   function closeDragElement() {
     // stop moving when mouse button is released:
-    document.onmouseup = null;
-    document.onmousemove = null;
+    document.onmouseup = oldmouseup;
+    document.onmousemove = oldmousemove;
   }
 }
 

@@ -28,7 +28,7 @@ if (x === "react-dom") return Spicetify.ReactDOM;
   var import_react = __toESM(__require("react"));
   var import_react_dom = __toESM(__require("react-dom"));
 
-  // postcss-module:C:\Users\Matt\AppData\Local\Temp\tmp-37060-o7AFA3z46kxY\1813b4585760\settings.module.css
+  // postcss-module:C:\Users\Matt\AppData\Local\Temp\tmp-28608-P91wERJb4SYD\1813b8d4c4d0\settings.module.css
   var settings_module_default = { "settingsContainer": "settings-module__settingsContainer___e9wxn_weightedDplaylists", "heading": "settings-module__heading___AnER-_weightedDplaylists", "description": "settings-module__description___dP4fR_weightedDplaylists", "inputWrapper": "settings-module__inputWrapper___LgOrw_weightedDplaylists" };
 
   // node_modules/spcr-settings/settingsSection.tsx
@@ -588,11 +588,15 @@ if (x === "react-dom") return Spicetify.ReactDOM;
     }
   }
   function dragElement(elmnt) {
+    var oldmousemove = document.onmousemove;
+    var oldmouseup = document.onmouseup;
     var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
     elmnt.onmousedown = dragMouseDown;
     function dragMouseDown(e) {
       e = e || window.event;
-      e.preventDefault();
+      if (e.path[0].className == "weight-slider") {
+        return;
+      }
       pos3 = e.clientX;
       pos4 = e.clientY;
       document.onmouseup = closeDragElement;
@@ -600,7 +604,6 @@ if (x === "react-dom") return Spicetify.ReactDOM;
     }
     function elementDrag(e) {
       e = e || window.event;
-      e.preventDefault();
       pos1 = pos3 - e.clientX;
       pos2 = pos4 - e.clientY;
       pos3 = e.clientX;
@@ -609,8 +612,8 @@ if (x === "react-dom") return Spicetify.ReactDOM;
       elmnt.style.left = elmnt.offsetLeft - pos1 + "px";
     }
     function closeDragElement() {
-      document.onmouseup = null;
-      document.onmousemove = null;
+      document.onmouseup = oldmouseup;
+      document.onmousemove = oldmousemove;
     }
   }
   async function main() {
@@ -651,7 +654,7 @@ if (x === "react-dom") return Spicetify.ReactDOM;
       var el = document.createElement('style');
       el.id = `weightedDplaylists`;
       el.textContent = (String.raw`
-  /* C:/Users/Matt/AppData/Local/Temp/tmp-37060-o7AFA3z46kxY/1813b4585760/settings.module.css */
+  /* C:/Users/Matt/AppData/Local/Temp/tmp-28608-P91wERJb4SYD/1813b8d4c4d0/settings.module.css */
 .settings-module__settingsContainer___e9wxn_weightedDplaylists {
   display: contents;
 }
