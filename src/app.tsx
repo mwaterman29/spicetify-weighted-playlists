@@ -13,6 +13,21 @@ const weightSliderPopupTemplateString = `<div class="weight-slider-popup" style=
 const exportButtonTemplateString = `<input type="button" class="weight-export-button" value="Export Weights" style="background-color:#121212;"`;
 const importButtonTemplateString = `<input type="button" class="weight-import-button" value="Import Weights" style="background-color:#121212;"`;
 
+const importPopupContentDivStyle = `
+display: flex;
+flex-direction: column;
+flex-wrap: nowrap;
+justify-content: center;`
+const importPopupTextareaTemplateString = `<textarea  cols="30" rows="10" style = "
+inset: 0px auto auto 0px; 
+margin: 0px;
+"
+></textarea>`
+
+const importPopupButtonTemplateString = `<input type="button" class="weight-import-button" value="Import Weights" style = "
+    inset: 0px auto auto 0px; 
+">`
+
 //Const names
 const weightedSwitchName = "weightedSwitch";
 const weightedSwitchSearch = "#weightedSwitch";
@@ -34,6 +49,8 @@ function htmlToElement(html: string) {
   let template = document.createElement('template');
   html = html.trim(); // Never return a text node of whitespace as the result
   template.innerHTML = html;
+  if(!template.content.firstChild)
+    throw new ReferenceError("Failed to create element: " + html);
   return template.content.firstChild;
 }
 
@@ -176,13 +193,11 @@ async function addImportButton()
 async function importWeightsPopup()
 {
   let content = document.createElement("div");
+  content.id = "popup-config-container";
+  content.setAttribute('style', importPopupContentDivStyle); 
 
   let textarea = htmlToElement(`<textarea  cols="30" rows="10"></textarea>`);
-  if(!textarea)
-    return;
   let button = htmlToElement(`<input type="button" class="weight-import-button" value="Import Weights">`);
-  if(!button)
-    return;
   button?.addEventListener('click', importWeights)
   
   content.append(textarea, button);
