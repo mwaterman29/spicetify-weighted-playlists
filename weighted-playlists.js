@@ -5,6 +5,7 @@ var weightedDplaylists = (() => {
   var __getOwnPropNames = Object.getOwnPropertyNames;
   var __getProtoOf = Object.getPrototypeOf;
   var __hasOwnProp = Object.prototype.hasOwnProperty;
+  var __markAsModule = (target) => __defProp(target, "__esModule", { value: true });
   var __require = /* @__PURE__ */ ((x) => typeof require !== "undefined" ? require : typeof Proxy !== "undefined" ? new Proxy(x, {
     get: (a, b) => (typeof require !== "undefined" ? require : a)[b]
   }) : x)(function(x) {
@@ -14,21 +15,23 @@ if (x === "react-dom") return Spicetify.ReactDOM;
       return require.apply(this, arguments);
     throw new Error('Dynamic require of "' + x + '" is not supported');
   });
-  var __copyProps = (to, from, except, desc) => {
-    if (from && typeof from === "object" || typeof from === "function") {
-      for (let key of __getOwnPropNames(from))
-        if (!__hasOwnProp.call(to, key) && key !== except)
-          __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+  var __reExport = (target, module, copyDefault, desc) => {
+    if (module && typeof module === "object" || typeof module === "function") {
+      for (let key of __getOwnPropNames(module))
+        if (!__hasOwnProp.call(target, key) && (copyDefault || key !== "default"))
+          __defProp(target, key, { get: () => module[key], enumerable: !(desc = __getOwnPropDesc(module, key)) || desc.enumerable });
     }
-    return to;
+    return target;
   };
-  var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target, mod));
+  var __toESM = (module, isNodeMode) => {
+    return __reExport(__markAsModule(__defProp(module != null ? __create(__getProtoOf(module)) : {}, "default", !isNodeMode && module && module.__esModule ? { get: () => module.default, enumerable: true } : { value: module, enumerable: true })), module);
+  };
 
   // node_modules/spcr-settings/settingsSection.tsx
   var import_react = __toESM(__require("react"));
   var import_react_dom = __toESM(__require("react-dom"));
 
-  // postcss-module:C:\Users\Matt\AppData\Local\Temp\tmp-28608-P91wERJb4SYD\1813b8d4c4d0\settings.module.css
+  // postcss-module:C:\Users\Matt\AppData\Local\Temp\tmp-32404-nvXNf8Ew26ii\1814c03d6390\settings.module.css
   var settings_module_default = { "settingsContainer": "settings-module__settingsContainer___e9wxn_weightedDplaylists", "heading": "settings-module__heading___AnER-_weightedDplaylists", "description": "settings-module__description___dP4fR_weightedDplaylists", "inputWrapper": "settings-module__inputWrapper___LgOrw_weightedDplaylists" };
 
   // node_modules/spcr-settings/settingsSection.tsx
@@ -253,6 +256,21 @@ if (x === "react-dom") return Spicetify.ReactDOM;
   var playlistContentClassNameDeeper = "JUa6JJNj7R_Y3i4P8YUX";
   var weightedSwitchTemplateString = `<label class="x-toggle-wrapper x-settings-secondColumn"><input id="weightedSwitch" class="x-toggle-input" type="checkbox"><span class="x-toggle-indicatorWrapper"><span class="x-toggle-indicator"></span></span></label>`;
   var weightButtonTemplateString = `<input type="button" class="weight-slider-access-button" value="Weight" style="background-color:#121212;"`;
+  var exportButtonTemplateString = `<input type="button" class="weight-export-button" value="Export Weights" style="background-color:#121212;"`;
+  var importButtonTemplateString = `<input type="button" class="weight-import-button" value="Import Weights" style="background-color:#121212;"`;
+  var importPopupContentDivStyle = `
+display: flex;
+flex-direction: column;
+flex-wrap: nowrap;
+justify-content: center;`;
+  var importPopupTextareaTemplateString = `<textarea  cols="30" rows="10" class="import-weight-textarea" style = "
+inset: 0px auto auto 0px; 
+margin: 0px;
+"
+></textarea>`;
+  var importPopupButtonTemplateString = `<input type="button" class="weight-import-button" value="Import Weights" style = "
+    inset: 0px auto auto 0px; 
+">`;
   var weightedSwitchName = "weightedSwitch";
   var weightedSwitchSearch = "#weightedSwitch";
   var settings;
@@ -267,6 +285,8 @@ if (x === "react-dom") return Spicetify.ReactDOM;
     let template = document.createElement("template");
     html = html.trim();
     template.innerHTML = html;
+    if (!template.content.firstChild)
+      throw new ReferenceError("Failed to create element: " + html);
     return template.content.firstChild;
   }
   function getCurrentPlaylistID() {
@@ -281,15 +301,19 @@ if (x === "react-dom") return Spicetify.ReactDOM;
     }
   }
   function toggleWeightedness(e) {
-    var _a;
+    var _a, _b, _c;
     let id = getCurrentPlaylistID();
     weightedness[id] = e.target.checked;
     console.log("Weighted: " + e.target.checked + " for " + id + " full weightedness: " + JSON.stringify(weightedness));
     Spicetify.LocalStorage.set("weightedness", JSON.stringify(weightedness));
     if (weightedness[id]) {
       addWeightSliders((_a = document.querySelector("." + playlistContentClassName)) == null ? void 0 : _a.querySelector("." + playlistContentClassNameDeeper));
+      addExportButton();
+      addImportButton();
     } else {
       removeWeightSliders();
+      (_b = document.querySelector(".weight-export-button")) == null ? void 0 : _b.remove();
+      (_c = document.querySelector(".weight-import-button")) == null ? void 0 : _c.remove();
     }
   }
   async function addWeightedSwitch() {
@@ -298,8 +322,6 @@ if (x === "react-dom") return Spicetify.ReactDOM;
       return;
     let playlistActionBar = document.querySelector(".main-actionBar-ActionBarRow");
     let testSwitch = htmlToElement(weightedSwitchTemplateString);
-    if (!testSwitch)
-      return;
     let spaceBuffer = document.querySelector(".KodyK77Gzjb8NqPGpcgw");
     let addedSwitch = playlistActionBar == null ? void 0 : playlistActionBar.insertBefore(testSwitch, spaceBuffer);
     let thisWeightedness = weightedness[getCurrentPlaylistID()];
@@ -310,6 +332,97 @@ if (x === "react-dom") return Spicetify.ReactDOM;
     else
       (_b = document.querySelector(weightedSwitchSearch)) == null ? void 0 : _b.removeAttribute("checked");
     addedSwitch == null ? void 0 : addedSwitch.addEventListener("input", toggleWeightedness);
+    if (thisWeightedness) {
+      addExportButton();
+      addImportButton();
+    }
+  }
+  async function addExportButton() {
+    console.log("Adding Export Button.");
+    if (document.querySelector(".weight-export-button"))
+      return;
+    let playlistActionBar = document.querySelector(".main-actionBar-ActionBarRow");
+    let spaceBuffer = document.querySelector(".KodyK77Gzjb8NqPGpcgw");
+    let exportButton = htmlToElement(exportButtonTemplateString + `id="${getCurrentPlaylistID()}">`);
+    let addedExportButton = playlistActionBar == null ? void 0 : playlistActionBar.insertBefore(exportButton, spaceBuffer);
+    addedExportButton == null ? void 0 : addedExportButton.addEventListener("click", exportWeights);
+  }
+  async function addImportButton() {
+    console.log("Adding Import Button.");
+    if (document.querySelector(".weight-import-button"))
+      return;
+    let playlistActionBar = document.querySelector(".main-actionBar-ActionBarRow");
+    let spaceBuffer = document.querySelector(".KodyK77Gzjb8NqPGpcgw");
+    let importButton = htmlToElement(importButtonTemplateString + `id="${getCurrentPlaylistID()}">`);
+    let addedimportButton = playlistActionBar == null ? void 0 : playlistActionBar.insertBefore(importButton, spaceBuffer);
+    addedimportButton == null ? void 0 : addedimportButton.addEventListener("click", importWeightsPopup);
+  }
+  async function importWeightsPopup() {
+    let content = document.createElement("div");
+    content.id = "popup-config-container";
+    content.setAttribute("style", importPopupContentDivStyle);
+    let textarea = htmlToElement(importPopupTextareaTemplateString);
+    let button = htmlToElement(importPopupButtonTemplateString);
+    button == null ? void 0 : button.addEventListener("click", importWeights);
+    content.append(textarea, button);
+    Spicetify.PopupModal.display({
+      title: "Weight Import",
+      content
+    });
+  }
+  async function importWeights() {
+    var _a;
+    let textarea = document.querySelector(`.import-weight-textarea`);
+    let importString = textarea == null ? void 0 : textarea.value;
+    let playlistId = getCurrentPlaylistID();
+    let entries = importString.split("|");
+    entries.forEach((entry) => {
+      let entryContent = entry.split(":");
+      let id = entryContent[0];
+      let weight = Number(entryContent[1]);
+      weights[currentPlaylistID][id] = weight;
+      console.log("Setting weight for " + id + " to " + weight);
+    });
+    Spicetify.LocalStorage.set("weights", JSON.stringify(weights));
+    removeWeightSliders();
+    const playlistContents = (_a = document.querySelector("." + playlistContentClassName)) == null ? void 0 : _a.querySelector("." + playlistContentClassNameDeeper);
+    addWeightSliders(playlistContents);
+    Spicetify.PopupModal.hide();
+    Spicetify.showNotification("Weights Imported! You might need to refresh the playlist to see them applied.");
+  }
+  function copyTextToClipboard(text) {
+    let textArea = document.createElement("textarea");
+    textArea.style.position = "fixed";
+    textArea.style.top = "0";
+    textArea.style.left = "0";
+    textArea.style.width = "2em";
+    textArea.style.height = "2em";
+    textArea.style.padding = "0";
+    textArea.style.border = "none";
+    textArea.style.outline = "none";
+    textArea.style.boxShadow = "none";
+    textArea.style.background = "transparent";
+    textArea.value = text;
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    try {
+      document.execCommand("copy");
+      Spicetify.showNotification("Weights Copied To Clipboard!");
+    } catch (err) {
+      console.log("Oops, unable to copy");
+    }
+    document.body.removeChild(textArea);
+  }
+  async function exportWeights() {
+    console.log("Exporting weights to clipboard.");
+    let weightsString = "";
+    let playlist = getCurrentPlaylistID();
+    let playlistWeights = weights[playlist];
+    Object.entries(playlistWeights).forEach(([key, value]) => {
+      weightsString = weightsString.concat(key, ":", value.toString(), "|");
+    });
+    copyTextToClipboard(weightsString.slice(0, -1));
   }
   var weightSliderPopupString = `
 <div class="weight-slider-popup">
@@ -394,8 +507,6 @@ if (x === "react-dom") return Spicetify.ReactDOM;
     let y = e.y;
     let popupPositioningStyleString = `transform: translate(${x}px, ${y}px)`;
     let popup = htmlToElement(weightSliderPopupString);
-    if (!popup)
-      return;
     (_a = document.querySelector(`.weight-slider-popup`)) == null ? void 0 : _a.remove();
     let popupNode = (_b = document.querySelector("body")) == null ? void 0 : _b.appendChild(popup);
     (_c = document.querySelector(`.weight-slider-popup`)) == null ? void 0 : _c.setAttribute("style", popupPositioningStyleString);
@@ -453,8 +564,6 @@ if (x === "react-dom") return Spicetify.ReactDOM;
       }
       let uri = selectedPlaylistContents[songIndex].link.split(":")[2];
       let weightButton = htmlToElement(weightButtonTemplateString + `id="${uri}">`);
-      if (!weightButton)
-        continue;
       weightButton.addEventListener("click", setSelectedSong(uri));
       weightButton.addEventListener("click", openWeightSliderPopup);
       (_d = playlistRows[i].firstChild) == null ? void 0 : _d.childNodes[1].appendChild(weightButton);
@@ -588,9 +697,9 @@ if (x === "react-dom") return Spicetify.ReactDOM;
     }
   }
   function dragElement(elmnt) {
-    var oldmousemove = document.onmousemove;
-    var oldmouseup = document.onmouseup;
-    var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+    let oldmousemove = document.onmousemove;
+    let oldmouseup = document.onmouseup;
+    let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
     elmnt.onmousedown = dragMouseDown;
     function dragMouseDown(e) {
       e = e || window.event;
@@ -654,7 +763,7 @@ if (x === "react-dom") return Spicetify.ReactDOM;
       var el = document.createElement('style');
       el.id = `weightedDplaylists`;
       el.textContent = (String.raw`
-  /* C:/Users/Matt/AppData/Local/Temp/tmp-28608-P91wERJb4SYD/1813b8d4c4d0/settings.module.css */
+  /* C:/Users/Matt/AppData/Local/Temp/tmp-32404-nvXNf8Ew26ii/1814c03d6390/settings.module.css */
 .settings-module__settingsContainer___e9wxn_weightedDplaylists {
   display: contents;
 }
