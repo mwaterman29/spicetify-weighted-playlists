@@ -18,7 +18,7 @@ display: flex;
 flex-direction: column;
 flex-wrap: nowrap;
 justify-content: center;`
-const importPopupTextareaTemplateString = `<textarea  cols="30" rows="10" style = "
+const importPopupTextareaTemplateString = `<textarea  cols="30" rows="10" class="import-weight-textarea" style = "
 inset: 0px auto auto 0px; 
 margin: 0px;
 "
@@ -189,21 +189,35 @@ async function importWeightsPopup()
   content.id = "popup-config-container";
   content.setAttribute('style', importPopupContentDivStyle); 
 
-  let textarea = htmlToElement(`<textarea  cols="30" rows="10"></textarea>`);
-  let button = htmlToElement(`<input type="button" class="weight-import-button" value="Import Weights">`);
+  let textarea = htmlToElement(importPopupTextareaTemplateString);
+  let button = htmlToElement(importPopupButtonTemplateString);
   button?.addEventListener('click', importWeights)
   
   content.append(textarea, button);
 
   Spicetify.PopupModal.display({
-    title: "Test Popup",
+    title: "Weight Import",
     content: content,
   });
 }
 
 async function importWeights()
 {
+  let textarea = document.querySelector(`.import-weight-textarea`) as HTMLInputElement;
+  let importString = textarea?.value;
+  let playlistId = getCurrentPlaylistID();
+
+  let entries = importString.split('|')
+  entries.forEach(entry =>{
+    let entryContent = entry.split(':');
+    let id = entryContent[0];
+    let weight = Number(entryContent[1]);
+    weights[currentPlaylistID][id] = weight;
+    console.log("Setting weight for " + id + " to " + weight);
+  });
+
   Spicetify.PopupModal.hide();
+
   Spicetify.showNotification("Weights Imported!");
 }
 
@@ -245,7 +259,7 @@ async function exportWeights()
       weightsString = weightsString.concat(key, ":", value.toString(), "|");
     }
   );
-  copyTextToClipboard(weightsString);
+  copyTextToClipboard(weightsString.slice(0, -1));
 }
 
 //Weight Slider Popup:
