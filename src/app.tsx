@@ -1,6 +1,5 @@
 import React from "react";
 import { SettingsSection } from "spcr-settings";
-import save from "save-file";
 
 //Class names from the spotify app
 const actionBarFlexBoxClassName = "KodyK77Gzjb8NqPGpcgw"; // name for  the space buffer
@@ -12,6 +11,7 @@ const weightedSwitchTemplateString = `<label class="x-toggle-wrapper x-settings-
 const weightButtonTemplateString = `<input type="button" class="weight-slider-access-button" value="Weight" style="background-color:#121212;"`;
 const weightSliderPopupTemplateString = `<div class="weight-slider-popup" style="z-index: 10000; position: absolute; inset: 0px auto auto 0px; margin: 0px; transform: translate(200px, 200px); background-color:Tomato; border-radius: 10px;"> <p>Weight: </p> <div class="slidecontainer"> <input type="range" min="0.01" max="100" value="1" class="slider" id="myRange"> </div> </div>`;
 const exportButtonTemplateString = `<input type="button" class="weight-export-button" value="Export Weights" style="background-color:#121212;"`;
+const importButtonTemplateString = `<input type="button" class="weight-import-button" value="Import Weights" style="background-color:#121212;"`;
 
 //Const names
 const weightedSwitchName = "weightedSwitch";
@@ -75,11 +75,13 @@ function toggleWeightedness(e : any)
   {
     addWeightSliders(document.querySelector("." + playlistContentClassName)?.querySelector("." + playlistContentClassNameDeeper));
     addExportButton();
+    addImportButton();
   }
   else
   {
     removeWeightSliders();
     document.querySelector(".weight-export-button")?.remove();
+    document.querySelector(".weight-import-button")?.remove();
   }
 }
 
@@ -118,13 +120,16 @@ async function addWeightedSwitch()
 
   //add export button if this playlist is weighted
   if(thisWeightedness)
+  {
     addExportButton();
-
+    addImportButton();
+  }
 }
 
 // 
 async function addExportButton()
 {
+    console.log("Adding Export Button.");
     //if it already exists on the page, don't add another
     if(document.querySelector(".weight-export-button"))
       return;
@@ -143,6 +148,55 @@ async function addExportButton()
     let addedExportButton = playlistActionBar?.insertBefore(exportButton, spaceBuffer);
 
     addedExportButton?.addEventListener('click', exportWeights)
+}
+
+async function addImportButton()
+{
+    console.log("Adding Import Button.");
+    //if it already exists on the page, don't add another
+    if(document.querySelector(".weight-import-button"))
+      return;
+
+    //Reference Action Bar
+    let playlistActionBar = document.querySelector(".main-actionBar-ActionBarRow");
+
+    //Find the flex box next to the buttons on the playlist bar which for some reason has the name "KodyK77Gzjb8NqPGpcgw" (very well might change with update)
+    let spaceBuffer = document.querySelector(".KodyK77Gzjb8NqPGpcgw");
+
+    //Add import button
+    let importButton = htmlToElement(importButtonTemplateString  + `id="${getCurrentPlaylistID()}">`);
+    if(!importButton)
+      return;
+
+    let addedimportButton = playlistActionBar?.insertBefore(importButton, spaceBuffer);
+
+    addedimportButton?.addEventListener('click', importWeightsPopup)
+}
+
+async function importWeightsPopup()
+{
+  let content = document.createElement("div");
+
+  let textarea = htmlToElement(`<textarea  cols="30" rows="10"></textarea>`);
+  if(!textarea)
+    return;
+  let button = htmlToElement(`<input type="button" class="weight-import-button" value="Import Weights">`);
+  if(!button)
+    return;
+  button?.addEventListener('click', importWeights)
+  
+  content.append(textarea, button);
+
+  Spicetify.PopupModal.display({
+    title: "Test Popup",
+    content: content,
+  });
+}
+
+async function importWeights()
+{
+  Spicetify.PopupModal.hide();
+  Spicetify.showNotification("Weights Imported!");
 }
 
 // https://stackoverflow.com/questions/400212/how-do-i-copy-to-the-clipboard-in-javascript
