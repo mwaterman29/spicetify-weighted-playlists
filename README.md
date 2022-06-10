@@ -44,7 +44,6 @@ You can set the minimum and maximum weight in the settings.
 ### Upcoming Features
 
 - The shuffle uses the queue system to choose its next song. It generally respects the queue, but playlist changes may eat an item out of the queue or extraneously add one to the queue. This should rarely occur, but will still be addressed in future updates
-- Importing / Exporting weights
 - Playlist Export: Generating an unweighted playlist from a weighted one for use with the default shuffle.
 - UI Enhancements (improved design, draggable popup, etc)
 
