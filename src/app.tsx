@@ -1,5 +1,6 @@
 import React from "react";
 import { SettingsSection } from "spcr-settings";
+import save from "save-file";
 
 //Class names from the spotify app
 const actionBarFlexBoxClassName = "KodyK77Gzjb8NqPGpcgw"; // name for  the space buffer
@@ -144,9 +145,45 @@ async function addExportButton()
     addedExportButton?.addEventListener('click', exportWeights)
 }
 
+// https://stackoverflow.com/questions/400212/how-do-i-copy-to-the-clipboard-in-javascript
+function copyTextToClipboard(text : string) {
+  let textArea = document.createElement("textarea");
+  textArea.style.position = 'fixed';
+  textArea.style.top = '0';
+  textArea.style.left = '0';
+  textArea.style.width = '2em';
+  textArea.style.height = '2em';
+  textArea.style.padding = '0';
+  textArea.style.border = 'none';
+  textArea.style.outline = 'none';
+  textArea.style.boxShadow = 'none';
+  textArea.style.background = 'transparent';
+  textArea.value = text;
+  document.body.appendChild(textArea);
+  textArea.focus();
+  textArea.select();
+  try {
+    document.execCommand('copy');
+    Spicetify.showNotification("Weights Copied To Clipboard!");
+  } catch (err) {
+    console.log('Oops, unable to copy');
+  }
+
+  document.body.removeChild(textArea);
+}
+
 async function exportWeights()
 {
-  console.log("Exporting weights...")
+  console.log("Exporting weights to clipboard.")
+  let weightsString = "";
+  let playlist = getCurrentPlaylistID();
+  let playlistWeights = weights[playlist];
+  Object.entries(playlistWeights).forEach(
+    ([key, value]) => {
+      weightsString = weightsString.concat(key, ":", value.toString(), "|");
+    }
+  );
+  copyTextToClipboard(weightsString);
 }
 
 //Weight Slider Popup:
@@ -622,6 +659,7 @@ async function main() {
   //min and max weight
   settings.addInput("min-weight", "Minimum Song Weight", "0.25");
   settings.addInput("max-weight", "Maximum Song Weight", "10");
+  //settings.addInput("export-path", "Export Path", "")
 
   //apply
   settings.pushSettings();
