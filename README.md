@@ -33,6 +33,10 @@ You can set the minimum and maximum weight in the settings.
 
 ![img](https://i.gyazo.com/d234fb87d30c6ebba9ddd35d09405e57.png)
 
+You can import and export weights via the clipboard.
+
+![img](https://i.gyazo.com/0dd8bdda798fae0be46b935e61bb6487.png)
+
 ### Usage Notes
 
 - Don't set minimum or maximum weight to be too extreme.
