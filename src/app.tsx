@@ -114,8 +114,6 @@ async function addWeightedSwitch()
 
   //Generate switch from template string
   let testSwitch = htmlToElement(weightedSwitchTemplateString);
-  if(!testSwitch)
-    return;
 
   //Find the flex box next to the buttons on the playlist bar which for some reason has the name "KodyK77Gzjb8NqPGpcgw" (very well might change with update)
   let spaceBuffer = document.querySelector(".KodyK77Gzjb8NqPGpcgw");
@@ -159,8 +157,6 @@ async function addExportButton()
 
     //Add export button
     let exportButton = htmlToElement(exportButtonTemplateString  + `id="${getCurrentPlaylistID()}">`);
-    if(!exportButton)
-      return;
 
     let addedExportButton = playlistActionBar?.insertBefore(exportButton, spaceBuffer);
 
@@ -182,9 +178,6 @@ async function addImportButton()
 
     //Add import button
     let importButton = htmlToElement(importButtonTemplateString  + `id="${getCurrentPlaylistID()}">`);
-    if(!importButton)
-      return;
-
     let addedimportButton = playlistActionBar?.insertBefore(importButton, spaceBuffer);
 
     addedimportButton?.addEventListener('click', importWeightsPopup)
@@ -358,8 +351,6 @@ async function openWeightSliderPopup(e : any)
 
   //Create the element
   let popup = htmlToElement(weightSliderPopupString);
-  if(!popup)
-    return;
 
   //if it already exists, remove it
   document.querySelector(`.weight-slider-popup`)?.remove();
@@ -467,8 +458,6 @@ async function addWeightSliders(playlistContents : any){
     let uri = selectedPlaylistContents[songIndex].link.split(':')[2];
 
     let weightButton = htmlToElement(weightButtonTemplateString + `id="${uri}">`);
-    if(!weightButton)
-      continue;
 
     //add event listener for opening the weight popup, and to set the current song
     weightButton.addEventListener("click", setSelectedSong(uri));
