@@ -216,9 +216,15 @@ async function importWeights()
     console.log("Setting weight for " + id + " to " + weight);
   });
 
+  Spicetify.LocalStorage.set("weights", JSON.stringify(weights));
+
+  removeWeightSliders();
+  const playlistContents = document.querySelector("." + playlistContentClassName)?.querySelector("." + playlistContentClassNameDeeper);
+  addWeightSliders(playlistContents);
+
   Spicetify.PopupModal.hide();
 
-  Spicetify.showNotification("Weights Imported!");
+  Spicetify.showNotification("Weights Imported! You might need to refresh the playlist to see them applied.");
 }
 
 // https://stackoverflow.com/questions/400212/how-do-i-copy-to-the-clipboard-in-javascript
