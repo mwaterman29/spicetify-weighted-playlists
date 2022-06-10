@@ -10,6 +10,7 @@ const playlistContentClassNameDeeper = "JUa6JJNj7R_Y3i4P8YUX";
 const weightedSwitchTemplateString = `<label class="x-toggle-wrapper x-settings-secondColumn"><input id="weightedSwitch" class="x-toggle-input" type="checkbox"><span class="x-toggle-indicatorWrapper"><span class="x-toggle-indicator"></span></span></label>`;
 const weightButtonTemplateString = `<input type="button" class="weight-slider-access-button" value="Weight" style="background-color:#121212;"`;
 const weightSliderPopupTemplateString = `<div class="weight-slider-popup" style="z-index: 10000; position: absolute; inset: 0px auto auto 0px; margin: 0px; transform: translate(200px, 200px); background-color:Tomato; border-radius: 10px;"> <p>Weight: </p> <div class="slidecontainer"> <input type="range" min="0.01" max="100" value="1" class="slider" id="myRange"> </div> </div>`;
+const exportButtonTemplateString = `<input type="button" class="weight-export-button" value="Export Weights" style="background-color:#121212;"`;
 
 //Const names
 const weightedSwitchName = "weightedSwitch";
@@ -72,10 +73,12 @@ function toggleWeightedness(e : any)
   if(weightedness[id])
   {
     addWeightSliders(document.querySelector("." + playlistContentClassName)?.querySelector("." + playlistContentClassNameDeeper));
+    addExportButton();
   }
   else
   {
     removeWeightSliders();
+    document.querySelector(".weight-export-button")?.remove();
   }
 }
 
@@ -97,7 +100,7 @@ async function addWeightedSwitch()
   //Find the flex box next to the buttons on the playlist bar which for some reason has the name "KodyK77Gzjb8NqPGpcgw" (very well might change with update)
   let spaceBuffer = document.querySelector(".KodyK77Gzjb8NqPGpcgw");
   let addedSwitch = playlistActionBar?.insertBefore(testSwitch, spaceBuffer);
-   
+
   //Initialize value from weightedness
   let thisWeightedness = weightedness[getCurrentPlaylistID()];
   if(thisWeightedness === undefined)
@@ -111,6 +114,39 @@ async function addWeightedSwitch()
 
   //Add event listener to the added switch
   addedSwitch?.addEventListener('input', toggleWeightedness);
+
+  //add export button if this playlist is weighted
+  if(thisWeightedness)
+    addExportButton();
+
+}
+
+// 
+async function addExportButton()
+{
+    //if it already exists on the page, don't add another
+    if(document.querySelector(".weight-export-button"))
+      return;
+
+    //Reference Action Bar
+    let playlistActionBar = document.querySelector(".main-actionBar-ActionBarRow");
+
+    //Find the flex box next to the buttons on the playlist bar which for some reason has the name "KodyK77Gzjb8NqPGpcgw" (very well might change with update)
+    let spaceBuffer = document.querySelector(".KodyK77Gzjb8NqPGpcgw");
+
+    //Add export button
+    let exportButton = htmlToElement(exportButtonTemplateString  + `id="${getCurrentPlaylistID()}">`);
+    if(!exportButton)
+      return;
+
+    let addedExportButton = playlistActionBar?.insertBefore(exportButton, spaceBuffer);
+
+    addedExportButton?.addEventListener('click', exportWeights)
+}
+
+async function exportWeights()
+{
+  console.log("Exporting weights...")
 }
 
 //Weight Slider Popup:
@@ -535,10 +571,10 @@ async function onSongChange(){
 }
 
 function dragElement(elmnt : any) {
-  var oldmousemove = document.onmousemove;
-  var oldmouseup = document.onmouseup;
+  let oldmousemove = document.onmousemove;
+  let oldmouseup = document.onmouseup;
 
-  var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+  let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
   elmnt.onmousedown = dragMouseDown;
 
   function dragMouseDown(e : any) {
