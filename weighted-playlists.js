@@ -31,7 +31,7 @@ if (x === "react-dom") return Spicetify.ReactDOM;
   var import_react = __toESM(__require("react"));
   var import_react_dom = __toESM(__require("react-dom"));
 
-  // postcss-module:C:\Users\Matt\AppData\Local\Temp\tmp-32404-nvXNf8Ew26ii\1814c03d6390\settings.module.css
+  // postcss-module:C:\Users\Matt\AppData\Local\Temp\tmp-25808-3wB4aNiOCHki\181659e221c0\settings.module.css
   var settings_module_default = { "settingsContainer": "settings-module__settingsContainer___e9wxn_weightedDplaylists", "heading": "settings-module__heading___AnER-_weightedDplaylists", "description": "settings-module__description___dP4fR_weightedDplaylists", "inputWrapper": "settings-module__inputWrapper___LgOrw_weightedDplaylists" };
 
   // node_modules/spcr-settings/settingsSection.tsx
@@ -307,6 +307,7 @@ margin: 0px;
     console.log("Weighted: " + e.target.checked + " for " + id + " full weightedness: " + JSON.stringify(weightedness));
     Spicetify.LocalStorage.set("weightedness", JSON.stringify(weightedness));
     if (weightedness[id]) {
+      initializeWeightsForPlaylist(id);
       addWeightSliders((_a = document.querySelector("." + playlistContentClassName)) == null ? void 0 : _a.querySelector("." + playlistContentClassNameDeeper));
       addExportButton();
       addImportButton();
@@ -375,13 +376,26 @@ margin: 0px;
     let textarea = document.querySelector(`.import-weight-textarea`);
     let importString = textarea == null ? void 0 : textarea.value;
     let playlistId = getCurrentPlaylistID();
+    weights[currentPlaylistID] = {};
+    let songs = "";
+    for (let i = 0; i < selectedPlaylistContents.length; i++) {
+      let songId = selectedPlaylistContents[i].link.split(":")[2];
+      songs += songId;
+      songs += ",";
+    }
+    console.log(songs);
+    initializeWeightsForPlaylist(currentPlaylistID);
     let entries = importString.split("|");
     entries.forEach((entry) => {
       let entryContent = entry.split(":");
       let id = entryContent[0];
       let weight = Number(entryContent[1]);
-      weights[currentPlaylistID][id] = weight;
-      console.log("Setting weight for " + id + " to " + weight);
+      if (songs.includes(id)) {
+        weights[currentPlaylistID][id] = weight;
+        console.log("Setting weight for " + id + " to " + weight);
+      } else {
+        console.log("This playlist does not have song " + id + " on it!");
+      }
     });
     Spicetify.LocalStorage.set("weights", JSON.stringify(weights));
     removeWeightSliders();
@@ -495,6 +509,7 @@ margin: 0px;
       policy: { link: true }
     });
     selectedPlaylistContents = res.rows;
+    console.log(res);
     weights[id] = {};
     for (let i = 0; i < selectedPlaylistContents.length; i++) {
       let songId = selectedPlaylistContents[i].link.split(":")[2];
@@ -551,7 +566,12 @@ margin: 0px;
     if (sortingOrderTextContent != "Custom order") {
       return;
     }
+    updatePlaylistContents();
+    while (selectedPlaylistContents.length == 0) {
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
     let playlistRows = playlistContents == null ? void 0 : playlistContents.childNodes[1].childNodes;
+    console.log(weights[currentPlaylistID]);
     for (let i = 0; i < playlistRows.length; i++) {
       let count = (_c = playlistRows[i].firstChild) == null ? void 0 : _c.childNodes[1].childNodes.length;
       if (count == void 0)
@@ -567,6 +587,10 @@ margin: 0px;
       weightButton.addEventListener("click", setSelectedSong(uri));
       weightButton.addEventListener("click", openWeightSliderPopup);
       (_d = playlistRows[i].firstChild) == null ? void 0 : _d.childNodes[1].appendChild(weightButton);
+      if (weights[currentPlaylistID][uri] == void 0) {
+        console.log("Weight for " + uri + " is undefined!");
+        weights[currentPlaylistID][uri] = 1;
+      }
       let button = document.getElementById(`${uri}`);
       if (button)
         button.setAttribute("value", `${weights[currentPlaylistID][uri]}`);
@@ -577,15 +601,18 @@ margin: 0px;
       item.remove();
     });
   }
-  async function listenThenAddWeightSliders() {
-    var _a;
-    await new Promise((r) => setTimeout(r, 1e3));
+  async function updatePlaylistContents() {
     currentPlaylistID = getCurrentPlaylistID();
     let uri = Spicetify.URI.fromString(`spotify:playlist:${currentPlaylistID}`);
     const res = await Spicetify.CosmosAsync.get(`sp://core-playlist/v1/playlist/${uri.toString()}/rows`, {
       policy: { link: true }
     });
     selectedPlaylistContents = res.rows;
+  }
+  async function listenThenAddWeightSliders() {
+    var _a;
+    await new Promise((r) => setTimeout(r, 1e3));
+    updatePlaylistContents();
     const playlistContents = (_a = document.querySelector("." + playlistContentClassName)) == null ? void 0 : _a.querySelector("." + playlistContentClassNameDeeper);
     if (!playlistContents)
       return;
@@ -763,7 +790,7 @@ margin: 0px;
       var el = document.createElement('style');
       el.id = `weightedDplaylists`;
       el.textContent = (String.raw`
-  /* C:/Users/Matt/AppData/Local/Temp/tmp-32404-nvXNf8Ew26ii/1814c03d6390/settings.module.css */
+  /* C:/Users/Matt/AppData/Local/Temp/tmp-25808-3wB4aNiOCHki/181659e221c0/settings.module.css */
 .settings-module__settingsContainer___e9wxn_weightedDplaylists {
   display: contents;
 }

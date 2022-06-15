@@ -90,6 +90,7 @@ function toggleWeightedness(e : any)
   //if toggled on, add weight sliders
   if(weightedness[id])
   {
+    initializeWeightsForPlaylist(id);
     addWeightSliders(document.querySelector("." + playlistContentClassName)?.querySelector("." + playlistContentClassNameDeeper));
     addExportButton();
     addImportButton();
@@ -203,21 +204,50 @@ async function importWeightsPopup()
 
 async function importWeights()
 {
+  //0. pull imported text string / update vars
   let textarea = document.querySelector(`.import-weight-textarea`) as HTMLInputElement;
   let importString = textarea?.value;
   let playlistId = getCurrentPlaylistID();
 
+  //1. clear existing weights
+  weights[currentPlaylistID] = {};
+
+  //2. find what songs this playlist has in it
+  let songs = "";
+  for(let i = 0; i < selectedPlaylistContents.length; i++)
+  {
+    let songId = selectedPlaylistContents[i].link.split(':')[2];
+    songs += songId;
+    songs += ',';
+  }
+  console.log(songs);
+
+  //3. re-initialize weights for this playlist
+  initializeWeightsForPlaylist(currentPlaylistID);
+
+  //4. for each imported song, if it's on this playlist, set the weight
   let entries = importString.split('|')
   entries.forEach(entry =>{
     let entryContent = entry.split(':');
     let id = entryContent[0];
     let weight = Number(entryContent[1]);
-    weights[currentPlaylistID][id] = weight;
-    console.log("Setting weight for " + id + " to " + weight);
+
+    if(songs.includes(id))
+    {
+      weights[currentPlaylistID][id] = weight;
+      console.log("Setting weight for " + id + " to " + weight);
+    }
+    else
+    {
+      console.log("This playlist does not have song " + id + " on it!");
+    }
+
   });
 
+  //5. update local storage
   Spicetify.LocalStorage.set("weights", JSON.stringify(weights));
 
+  //6. reinit ui
   removeWeightSliders();
   const playlistContents = document.querySelector("." + playlistContentClassName)?.querySelector("." + playlistContentClassNameDeeper);
   addWeightSliders(playlistContents);
@@ -265,7 +295,7 @@ async function exportWeights()
       weightsString = weightsString.concat(key, ":", value.toString(), "|");
     }
   );
-  copyTextToClipboard(weightsString.slice(0, -1));
+  copyTextToClipboard(weightsString.slice(0, -1)); // take the last '|' character off
 }
 
 //Weight Slider Popup:
@@ -346,6 +376,8 @@ async function initializeWeightsForPlaylist(id: string)
             policy: { link: true },
         });
   selectedPlaylistContents = res.rows;
+
+  console.log(res);
 
   //set weights[id] to blank
   weights[id] = {};
@@ -456,9 +488,20 @@ async function addWeightSliders(playlistContents : any){
         -> insert at the end
   */
 
+  //update contents
+  updatePlaylistContents();
+  // while the playlist has nothing in it,  wait
+  while (selectedPlaylistContents.length == 0) {
+    await new Promise(resolve => setTimeout(resolve, 100));
+  }
+
+
   //get playlist rows
   let playlistRows = playlistContents?.childNodes[1].childNodes;
+
   //console.log(`filling ${playlistRows.length} rows`)
+
+  console.log(weights[currentPlaylistID])
 
   for(let i = 0; i < playlistRows.length; i++)
   {
@@ -486,6 +529,13 @@ async function addWeightSliders(playlistContents : any){
     //add weight button
     playlistRows[i].firstChild?.childNodes[1].appendChild(weightButton);
 
+    //if for some reason, weight is undef. set it to 1
+    if(weights[currentPlaylistID][uri] == undefined)
+    {
+      console.log("Weight for " + uri + " is undefined!");
+      weights[currentPlaylistID][uri] = 1;
+    }
+
     //set the button's text to it's weight
     let button = document.getElementById(`${uri}`);
     if(button)
@@ -500,18 +550,23 @@ async function removeWeightSliders()
   })
 }
 
+async function updatePlaylistContents()
+{
+  currentPlaylistID = getCurrentPlaylistID();
+  let uri = Spicetify.URI.fromString(`spotify:playlist:${currentPlaylistID}`);
+  const res = await Spicetify.CosmosAsync.get(`sp://core-playlist/v1/playlist/${uri.toString()}/rows`, {
+            policy: { link: true },
+        });
+  selectedPlaylistContents = res.rows;
+}
+
 async function listenThenAddWeightSliders()
 {
   //literally just wait a second
   await new Promise(r => setTimeout(r, 1000));
 
   //Grab the playlist content from spotify api
-  currentPlaylistID = getCurrentPlaylistID();
-  let uri = Spicetify.URI.fromString(`spotify:playlist:${currentPlaylistID}`);
-  const res = await Spicetify.CosmosAsync.get(`sp://core-playlist/v1/playlist/${uri.toString()}/rows`, {
-            policy: { link: true },
-        });
-  selectedPlaylistContents = res.rows; 
+  updatePlaylistContents();
 
   //Grab the playlist content divs
   const playlistContents = document.querySelector("." + playlistContentClassName)?.querySelector("." + playlistContentClassNameDeeper);
