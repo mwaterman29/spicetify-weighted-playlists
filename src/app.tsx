@@ -2,9 +2,10 @@ import React from "react";
 import { SettingsSection } from "spcr-settings";
 
 //Class names from the spotify app
-const actionBarFlexBoxClassName = "KodyK77Gzjb8NqPGpcgw"; // name for  the space buffer
-const playlistContentClassName = "rezqw3Q4OEPB1m4rmwfw";
+const actionBarFlexBoxClassName = "playlist-playlist-searchBoxContainer"; // name for  the space buffer - used to be KodyK77Gzjb8NqPGpcgw
+const playlistContentClassName =  "main-rootlist-wrapper" // "rezqw3Q4OEPB1m4rmwfw";
 const playlistContentClassNameDeeper = "JUa6JJNj7R_Y3i4P8YUX";
+const playlistSortingClassName = "x-sortBox-sortDropdown"
 
 //Template Strings 
 const weightedSwitchTemplateString = `<label class="x-toggle-wrapper x-settings-secondColumn"><input id="weightedSwitch" class="x-toggle-input" type="checkbox"><span class="x-toggle-indicatorWrapper"><span class="x-toggle-indicator"></span></span></label>`;
@@ -77,7 +78,7 @@ function getCurrentPlaylistID()
 //Actual Functionality
 
 //Weighted switch event listener to save ids
-function toggleWeightedness(e : any)
+async function toggleWeightedness(e : any)
 {
   //find playlist id, toggle it's weightedness in the weightedness array
   let id = getCurrentPlaylistID();
@@ -91,7 +92,8 @@ function toggleWeightedness(e : any)
   if(weightedness[id])
   {
     initializeWeightsForPlaylist(id);
-    addWeightSliders(document.querySelector("." + playlistContentClassName)?.querySelector("." + playlistContentClassNameDeeper));
+    let contents = await getPlaylistContents()
+    addWeightSliders(contents);
     addExportButton();
     addImportButton();
   }
@@ -116,8 +118,8 @@ async function addWeightedSwitch()
   //Generate switch from template string
   let testSwitch = htmlToElement(weightedSwitchTemplateString);
 
-  //Find the flex box next to the buttons on the playlist bar which for some reason has the name "KodyK77Gzjb8NqPGpcgw" (very well might change with update)
-  let spaceBuffer = document.querySelector(".KodyK77Gzjb8NqPGpcgw");
+  //Find the flex box next to the buttons on the playlist bar - now has a real name, reflected in variable
+  let spaceBuffer = document.querySelector("." + actionBarFlexBoxClassName);
   let addedSwitch = playlistActionBar?.insertBefore(testSwitch, spaceBuffer);
 
   //Initialize value from weightedness
@@ -154,7 +156,7 @@ async function addExportButton()
     let playlistActionBar = document.querySelector(".main-actionBar-ActionBarRow");
 
     //Find the flex box next to the buttons on the playlist bar which for some reason has the name "KodyK77Gzjb8NqPGpcgw" (very well might change with update)
-    let spaceBuffer = document.querySelector(".KodyK77Gzjb8NqPGpcgw");
+    let spaceBuffer = document.querySelector("." + actionBarFlexBoxClassName);
 
     //Add export button
     let exportButton = htmlToElement(exportButtonTemplateString  + `id="${getCurrentPlaylistID()}">`);
@@ -175,7 +177,7 @@ async function addImportButton()
     let playlistActionBar = document.querySelector(".main-actionBar-ActionBarRow");
 
     //Find the flex box next to the buttons on the playlist bar which for some reason has the name "KodyK77Gzjb8NqPGpcgw" (very well might change with update)
-    let spaceBuffer = document.querySelector(".KodyK77Gzjb8NqPGpcgw");
+    let spaceBuffer = document.querySelector("." + actionBarFlexBoxClassName);
 
     //Add import button
     let importButton = htmlToElement(importButtonTemplateString  + `id="${getCurrentPlaylistID()}">`);
@@ -249,7 +251,7 @@ async function importWeights()
 
   //6. reinit ui
   removeWeightSliders();
-  const playlistContents = document.querySelector("." + playlistContentClassName)?.querySelector("." + playlistContentClassNameDeeper);
+  const playlistContents = await getPlaylistContents(); //document.querySelector("." + playlistContentClassName)?.querySelector("." + playlistContentClassNameDeeper);
   addWeightSliders(playlistContents);
 
   Spicetify.PopupModal.hide();
@@ -296,6 +298,21 @@ async function exportWeights()
     }
   );
   copyTextToClipboard(weightsString.slice(0, -1)); // take the last '|' character off
+}
+
+async function getPlaylistContents() : Promise<Element>
+{
+  //used to be this - document.querySelector("." + playlistContentClassName)?.querySelector("." + playlistContentClassNameDeeper);
+
+  //is now
+  var ret;
+  do {
+    ret = document.querySelector(".playlist-playlist-playlistContent")?.querySelector(".main-rootlist-wrapper")
+  } while(!ret);
+
+  console.log("Playlist contents:")
+  console.log(ret);
+  return ret;
 }
 
 //Weight Slider Popup:
@@ -475,7 +492,7 @@ async function addWeightSliders(playlistContents : any){
     return;
 
   //if the playlist isn't sorted by custom order, the row indices won't work
-  let sortingOrderTextContent = document.querySelector(".w6j_vX6SF5IxSXrrkYw5")?.firstChild?.textContent //?.querySelector(".main-type-mesto")?.textContent;
+  let sortingOrderTextContent = document.querySelector("." + playlistSortingClassName)?.firstChild?.textContent //?.querySelector(".main-type-mesto")?.textContent;
   if(sortingOrderTextContent != 'Custom order')
   {
     return;
@@ -566,10 +583,10 @@ async function listenThenAddWeightSliders()
   await new Promise(r => setTimeout(r, 1000));
 
   //Grab the playlist content from spotify api
-  updatePlaylistContents();
+  await updatePlaylistContents();
 
   //Grab the playlist content divs
-  const playlistContents = document.querySelector("." + playlistContentClassName)?.querySelector("." + playlistContentClassNameDeeper);
+  const playlistContents = await getPlaylistContents(); //document.querySelector("." + playlistContentClassName)?.querySelector("." + playlistContentClassNameDeeper);
   if(!playlistContents)
     return;
 
@@ -663,7 +680,7 @@ function rollAndAdd(playlistURI : string){
 
 async function removeFromQueue(index : number)
 {
-  let nextTrack = Spicetify.Platform.PlayerAPI._queue._state.nextTracks[index];
+  let nextTrack = Spicetify.Platform.PlayerAPI._queue._queue.nextTracks[index];
   let uid = nextTrack.contextTrack.uid;
   let uri = nextTrack.contextTrack.uri;
   let nextTrackObj = {uid, uri};
@@ -681,10 +698,10 @@ async function onSongChange(){
   //Get playing context
   let context = Spicetify.Platform.PlayerAPI._state.context.uri;
   let playlistURI = context.split(':')[2];
-  let provider = Spicetify.Platform.PlayerAPI._queue._state.nextTracks[0].provider;
-  let nextProvider = Spicetify.Platform.PlayerAPI._queue._state.nextTracks[1].provider;
-  let farProvider =  Spicetify.Platform.PlayerAPI._queue._state.nextTracks[2].provider;
-  let nextTrackID = Spicetify.Platform.PlayerAPI._queue._state.nextTracks[0].contextTrack.uri;
+  let provider = Spicetify.Platform.PlayerAPI._queue._queue.nextTracks[0].provider;
+  let nextProvider = Spicetify.Platform.PlayerAPI._queue._queue.nextTracks[1].provider;
+  let farProvider =  Spicetify.Platform.PlayerAPI._queue._queue.nextTracks[2].provider;
+  let nextTrackID = Spicetify.Platform.PlayerAPI._queue._queue.nextTracks[0].contextTrack.uri;
   //console.log(`context is ${context} with lastPlaylist ${lastPlaylist}`);
 
   //Check for playlist change

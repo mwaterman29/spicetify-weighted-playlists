@@ -31,7 +31,7 @@ if (x === "react-dom") return Spicetify.ReactDOM;
   var import_react = __toESM(__require("react"));
   var import_react_dom = __toESM(__require("react-dom"));
 
-  // postcss-module:C:\Users\Matt\AppData\Local\Temp\tmp-25808-3wB4aNiOCHki\181659e221c0\settings.module.css
+  // postcss-module:C:\Users\Matt\AppData\Local\Temp\tmp-20568-t83hzS2YOGqi\1832ff0dd9b0\settings.module.css
   var settings_module_default = { "settingsContainer": "settings-module__settingsContainer___e9wxn_weightedDplaylists", "heading": "settings-module__heading___AnER-_weightedDplaylists", "description": "settings-module__description___dP4fR_weightedDplaylists", "inputWrapper": "settings-module__inputWrapper___LgOrw_weightedDplaylists" };
 
   // node_modules/spcr-settings/settingsSection.tsx
@@ -252,8 +252,8 @@ if (x === "react-dom") return Spicetify.ReactDOM;
   };
 
   // src/app.tsx
-  var playlistContentClassName = "rezqw3Q4OEPB1m4rmwfw";
-  var playlistContentClassNameDeeper = "JUa6JJNj7R_Y3i4P8YUX";
+  var actionBarFlexBoxClassName = "playlist-playlist-searchBoxContainer";
+  var playlistSortingClassName = "x-sortBox-sortDropdown";
   var weightedSwitchTemplateString = `<label class="x-toggle-wrapper x-settings-secondColumn"><input id="weightedSwitch" class="x-toggle-input" type="checkbox"><span class="x-toggle-indicatorWrapper"><span class="x-toggle-indicator"></span></span></label>`;
   var weightButtonTemplateString = `<input type="button" class="weight-slider-access-button" value="Weight" style="background-color:#121212;"`;
   var exportButtonTemplateString = `<input type="button" class="weight-export-button" value="Export Weights" style="background-color:#121212;"`;
@@ -300,21 +300,22 @@ margin: 0px;
       return "noID";
     }
   }
-  function toggleWeightedness(e) {
-    var _a, _b, _c;
+  async function toggleWeightedness(e) {
+    var _a, _b;
     let id = getCurrentPlaylistID();
     weightedness[id] = e.target.checked;
     console.log("Weighted: " + e.target.checked + " for " + id + " full weightedness: " + JSON.stringify(weightedness));
     Spicetify.LocalStorage.set("weightedness", JSON.stringify(weightedness));
     if (weightedness[id]) {
       initializeWeightsForPlaylist(id);
-      addWeightSliders((_a = document.querySelector("." + playlistContentClassName)) == null ? void 0 : _a.querySelector("." + playlistContentClassNameDeeper));
+      let contents = await getPlaylistContents();
+      addWeightSliders(contents);
       addExportButton();
       addImportButton();
     } else {
       removeWeightSliders();
-      (_b = document.querySelector(".weight-export-button")) == null ? void 0 : _b.remove();
-      (_c = document.querySelector(".weight-import-button")) == null ? void 0 : _c.remove();
+      (_a = document.querySelector(".weight-export-button")) == null ? void 0 : _a.remove();
+      (_b = document.querySelector(".weight-import-button")) == null ? void 0 : _b.remove();
     }
   }
   async function addWeightedSwitch() {
@@ -323,7 +324,7 @@ margin: 0px;
       return;
     let playlistActionBar = document.querySelector(".main-actionBar-ActionBarRow");
     let testSwitch = htmlToElement(weightedSwitchTemplateString);
-    let spaceBuffer = document.querySelector(".KodyK77Gzjb8NqPGpcgw");
+    let spaceBuffer = document.querySelector("." + actionBarFlexBoxClassName);
     let addedSwitch = playlistActionBar == null ? void 0 : playlistActionBar.insertBefore(testSwitch, spaceBuffer);
     let thisWeightedness = weightedness[getCurrentPlaylistID()];
     if (thisWeightedness === void 0)
@@ -343,7 +344,7 @@ margin: 0px;
     if (document.querySelector(".weight-export-button"))
       return;
     let playlistActionBar = document.querySelector(".main-actionBar-ActionBarRow");
-    let spaceBuffer = document.querySelector(".KodyK77Gzjb8NqPGpcgw");
+    let spaceBuffer = document.querySelector("." + actionBarFlexBoxClassName);
     let exportButton = htmlToElement(exportButtonTemplateString + `id="${getCurrentPlaylistID()}">`);
     let addedExportButton = playlistActionBar == null ? void 0 : playlistActionBar.insertBefore(exportButton, spaceBuffer);
     addedExportButton == null ? void 0 : addedExportButton.addEventListener("click", exportWeights);
@@ -353,7 +354,7 @@ margin: 0px;
     if (document.querySelector(".weight-import-button"))
       return;
     let playlistActionBar = document.querySelector(".main-actionBar-ActionBarRow");
-    let spaceBuffer = document.querySelector(".KodyK77Gzjb8NqPGpcgw");
+    let spaceBuffer = document.querySelector("." + actionBarFlexBoxClassName);
     let importButton = htmlToElement(importButtonTemplateString + `id="${getCurrentPlaylistID()}">`);
     let addedimportButton = playlistActionBar == null ? void 0 : playlistActionBar.insertBefore(importButton, spaceBuffer);
     addedimportButton == null ? void 0 : addedimportButton.addEventListener("click", importWeightsPopup);
@@ -372,7 +373,6 @@ margin: 0px;
     });
   }
   async function importWeights() {
-    var _a;
     let textarea = document.querySelector(`.import-weight-textarea`);
     let importString = textarea == null ? void 0 : textarea.value;
     let playlistId = getCurrentPlaylistID();
@@ -399,7 +399,7 @@ margin: 0px;
     });
     Spicetify.LocalStorage.set("weights", JSON.stringify(weights));
     removeWeightSliders();
-    const playlistContents = (_a = document.querySelector("." + playlistContentClassName)) == null ? void 0 : _a.querySelector("." + playlistContentClassNameDeeper);
+    const playlistContents = await getPlaylistContents();
     addWeightSliders(playlistContents);
     Spicetify.PopupModal.hide();
     Spicetify.showNotification("Weights Imported! You might need to refresh the playlist to see them applied.");
@@ -437,6 +437,16 @@ margin: 0px;
       weightsString = weightsString.concat(key, ":", value.toString(), "|");
     });
     copyTextToClipboard(weightsString.slice(0, -1));
+  }
+  async function getPlaylistContents() {
+    var _a;
+    var ret;
+    do {
+      ret = (_a = document.querySelector(".playlist-playlist-playlistContent")) == null ? void 0 : _a.querySelector(".main-rootlist-wrapper");
+    } while (!ret);
+    console.log("Playlist contents:");
+    console.log(ret);
+    return ret;
   }
   var weightSliderPopupString = `
 <div class="weight-slider-popup">
@@ -562,7 +572,7 @@ margin: 0px;
     var _a, _b, _c, _d;
     if (!weightedness[currentPlaylistID])
       return;
-    let sortingOrderTextContent = (_b = (_a = document.querySelector(".w6j_vX6SF5IxSXrrkYw5")) == null ? void 0 : _a.firstChild) == null ? void 0 : _b.textContent;
+    let sortingOrderTextContent = (_b = (_a = document.querySelector("." + playlistSortingClassName)) == null ? void 0 : _a.firstChild) == null ? void 0 : _b.textContent;
     if (sortingOrderTextContent != "Custom order") {
       return;
     }
@@ -610,10 +620,9 @@ margin: 0px;
     selectedPlaylistContents = res.rows;
   }
   async function listenThenAddWeightSliders() {
-    var _a;
     await new Promise((r) => setTimeout(r, 1e3));
-    updatePlaylistContents();
-    const playlistContents = (_a = document.querySelector("." + playlistContentClassName)) == null ? void 0 : _a.querySelector("." + playlistContentClassNameDeeper);
+    await updatePlaylistContents();
+    const playlistContents = await getPlaylistContents();
     if (!playlistContents)
       return;
     let playlistRowsParent = playlistContents == null ? void 0 : playlistContents.childNodes[1];
@@ -672,7 +681,7 @@ margin: 0px;
     lastAdded = uris[0];
   }
   async function removeFromQueue(index) {
-    let nextTrack = Spicetify.Platform.PlayerAPI._queue._state.nextTracks[index];
+    let nextTrack = Spicetify.Platform.PlayerAPI._queue._queue.nextTracks[index];
     let uid = nextTrack.contextTrack.uid;
     let uri = nextTrack.contextTrack.uri;
     let nextTrackObj = { uid, uri };
@@ -689,10 +698,10 @@ margin: 0px;
     await new Promise((r) => setTimeout(r, 250));
     let context = Spicetify.Platform.PlayerAPI._state.context.uri;
     let playlistURI = context.split(":")[2];
-    let provider = Spicetify.Platform.PlayerAPI._queue._state.nextTracks[0].provider;
-    let nextProvider = Spicetify.Platform.PlayerAPI._queue._state.nextTracks[1].provider;
-    let farProvider = Spicetify.Platform.PlayerAPI._queue._state.nextTracks[2].provider;
-    let nextTrackID = Spicetify.Platform.PlayerAPI._queue._state.nextTracks[0].contextTrack.uri;
+    let provider = Spicetify.Platform.PlayerAPI._queue._queue.nextTracks[0].provider;
+    let nextProvider = Spicetify.Platform.PlayerAPI._queue._queue.nextTracks[1].provider;
+    let farProvider = Spicetify.Platform.PlayerAPI._queue._queue.nextTracks[2].provider;
+    let nextTrackID = Spicetify.Platform.PlayerAPI._queue._queue.nextTracks[0].contextTrack.uri;
     if (playlistURI != lastPlaylist) {
       lastPlaylist = playlistURI;
       if (farProvider == "queue") {
@@ -790,7 +799,7 @@ margin: 0px;
       var el = document.createElement('style');
       el.id = `weightedDplaylists`;
       el.textContent = (String.raw`
-  /* C:/Users/Matt/AppData/Local/Temp/tmp-25808-3wB4aNiOCHki/181659e221c0/settings.module.css */
+  /* C:/Users/Matt/AppData/Local/Temp/tmp-20568-t83hzS2YOGqi/1832ff0dd9b0/settings.module.css */
 .settings-module__settingsContainer___e9wxn_weightedDplaylists {
   display: contents;
 }
