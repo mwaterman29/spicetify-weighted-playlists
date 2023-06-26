@@ -2,6 +2,22 @@
 
 [Spicetify](https://spicetify.app/) extension to allow for a weighted shuffle. You can enable playlists to be weighted and the songs will play corresponding to their weight.
 
+
+
+## USAGE NOTE!
+
+I absolutely cannot stand the new Spotify update. The navigation is horrible and I truly find it to be unusable. Consequently, I won't be maintaining the extension for later versions than 1.2.5.1006.
+
+You can download that version here:
+
+https://spotify.en.uptodown.com/windows/download/91111320
+
+Additionally, no guarantee that it works with any Spicetify version later than 2.18.1, though it should work with newer versions.
+
+I recommend a manual install.
+
+
+
 ## Install
 
 Available from the [Spicetify Marketplace](https://github.com/CharlieS1103/spicetify-marketplace) or via direct install:
